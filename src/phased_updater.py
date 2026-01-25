@@ -46,7 +46,7 @@ def install() -> None:
     # install the actual script and the module(s) it imports locally
     source_path = Path(__file__).parent.parent / "app"
     APP_DIR.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(source_path, APP_DIR)
+    shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
 
 
 def start() -> None:
