@@ -27,6 +27,10 @@ parts:
     build-snaps:
       - astral-uv
 
+  phased-updater-app:
+    plugin: dump
+    source: app
+
 # (Optional) Configuration options for the charm
 # This config section defines charm config options, and populates the Configure
 # tab on Charmhub.
