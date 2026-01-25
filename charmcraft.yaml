@@ -21,7 +21,7 @@ platforms:
   arm64:
 
 parts:
-  charm:
+  phased-updater-charm:
     plugin: uv
     source: .
     build-snaps:
