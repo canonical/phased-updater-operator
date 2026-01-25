@@ -30,6 +30,9 @@ parts:
   phased-updater-app:
     plugin: dump
     source: app
+    organize:
+      lputils.py: app/lputils.py
+      phased-updater: app/phased-updater
 
 # (Optional) Configuration options for the charm
 # This config section defines charm config options, and populates the Configure
