@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 PACKAGES = [
     "python3-simplejson",
     "python3-debian",
+    "python3-keyring",
     "python3-lazr.restfulclient",
     "python3-launchpadlib",
 ]
