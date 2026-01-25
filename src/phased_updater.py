@@ -7,6 +7,8 @@ The intention is that this module could be used outside the context of a charm.
 """
 
 import logging
+import shutil
+from pathlib import Path
 from subprocess import CalledProcessError
 
 from charmlibs import apt
@@ -19,6 +21,8 @@ PACKAGES = [
     "python3-lazr.restfulclient",
     "python3-launchpadlib",
 ]
+
+APP_DIR = Path("/app")
 
 
 def install() -> None:
@@ -38,6 +42,11 @@ def install() -> None:
         except apt.PackageError as e:
             logger.error(f"Failed to install {package}: {e}")
             raise
+
+    # install the actual script and the module(s) it imports locally
+    source_path = Path(__file__).parent.parent / "app"
+    APP_DIR.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_path, APP_DIR)
 
 
 def start() -> None:
