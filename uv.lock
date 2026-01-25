@@ -7,6 +7,30 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "charmlibs-apt"
+version = "1.0.0.post0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "opentelemetry-api" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fd/58/33e87779fdbcf62a3b34e3444d7175c1168b4b2726cc29c98849c09ac086/charmlibs_apt-1.0.0.post0.tar.gz", hash = "sha256:9c2e0b3c1f553ebcaae99c9aad72e15383aec56677a8dd3f6479dc6f084189a6", size = 31942, upload-time = "2025-10-15T02:40:29.521Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/92/4db19cd8bc94db51a115f7a2e3c46d96b991ca7ebe27207beac9a6570bc6/charmlibs_apt-1.0.0.post0-py3-none-any.whl", hash = "sha256:958e84719eb1feff539f058dc6c7af648c53c88b9ebe7c6157ec8d2bdf5fbfc6", size = 19287, upload-time = "2025-10-15T02:40:27.756Z" },
+]
+
+[[package]]
+name = "charmlibs-pathops"
+version = "1.2.0.post0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "ops" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5c/96/60f4f5dbc4a959297b6b36999d6afdd1d86224d4563e4b3a9a52214646db/charmlibs_pathops-1.2.0.post0.tar.gz", hash = "sha256:692c38688bbd54c00009c0a9562750cd39fa24a80d04be013554f6d9aabd35b8", size = 21904, upload-time = "2025-10-15T02:40:35.623Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4c/70/69a777d086166bacea085de8edd4cf815bcea17edf9b7f8c71a84026f804/charmlibs_pathops-1.2.0.post0-py3-none-any.whl", hash = "sha256:4c9dac4d37c248ec587759e1b5aafa3ba1a6a8818cbbcf38d7c44c2af84deaac", size = 27071, upload-time = "2025-10-15T02:40:34.17Z" },
+]
+
+[[package]]
 name = "codespell"
 version = "2.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -139,49 +163,6 @@ wheels = [
 ]
 
 [[package]]
-name = "phased-updater-operator"
-version = "0.0.1"
-source = { virtual = "." }
-dependencies = [
-    { name = "ops" },
-]
-
-[package.dev-dependencies]
-integration = [
-    { name = "jubilant" },
-    { name = "pytest" },
-]
-lint = [
-    { name = "codespell" },
-    { name = "pyright" },
-    { name = "ruff" },
-]
-unit = [
-    { name = "coverage", extra = ["toml"] },
-    { name = "ops", extra = ["testing"] },
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [{ name = "ops", specifier = ">=3,<4" }]
-
-[package.metadata.requires-dev]
-integration = [
-    { name = "jubilant" },
-    { name = "pytest" },
-]
-lint = [
-    { name = "codespell" },
-    { name = "pyright" },
-    { name = "ruff" },
-]
-unit = [
-    { name = "coverage", extras = ["toml"] },
-    { name = "ops", extras = ["testing"] },
-    { name = "pytest" },
-]
-
-[[package]]
 name = "nodeenv"
 version = "1.9.1"
 source = { registry = "https://pypi.org/simple" }
@@ -243,6 +224,55 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a1/d4/1fc4078c65507b51b96ca8f8c3ba19e6a61c8253c72794544580a7b6c24d/packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f", size = 165727, upload-time = "2025-04-19T11:48:59.673Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484", size = 66469, upload-time = "2025-04-19T11:48:57.875Z" },
+]
+
+[[package]]
+name = "phased-updater-operator"
+version = "0.0.1"
+source = { virtual = "." }
+dependencies = [
+    { name = "charmlibs-apt" },
+    { name = "charmlibs-pathops" },
+    { name = "ops" },
+]
+
+[package.dev-dependencies]
+integration = [
+    { name = "jubilant" },
+    { name = "pytest" },
+]
+lint = [
+    { name = "codespell" },
+    { name = "pyright" },
+    { name = "ruff" },
+]
+unit = [
+    { name = "coverage", extra = ["toml"] },
+    { name = "ops", extra = ["testing"] },
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "charmlibs-apt", specifier = ">=1.0.0.post0" },
+    { name = "charmlibs-pathops", specifier = ">=1.2.0.post0" },
+    { name = "ops", specifier = ">=3,<4" },
+]
+
+[package.metadata.requires-dev]
+integration = [
+    { name = "jubilant" },
+    { name = "pytest" },
+]
+lint = [
+    { name = "codespell" },
+    { name = "pyright" },
+    { name = "ruff" },
+]
+unit = [
+    { name = "coverage", extras = ["toml"] },
+    { name = "ops", extras = ["testing"] },
+    { name = "pytest" },
 ]
 
 [[package]]
