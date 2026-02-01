@@ -13,8 +13,6 @@ from subprocess import CalledProcessError, check_output
 
 from charmlibs import apt
 
-from charms.operator_libs_linux.v1.systemd import service_restart, service_running
-
 logger = logging.getLogger(__name__)
 
 BACKEND_PACKAGES = [
