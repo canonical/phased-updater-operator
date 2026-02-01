@@ -49,6 +49,9 @@ def install() -> None:
     APP_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
 
+    # install the crontab
+    shutil.copy(source_path / "crontab", Path("/etc/cron.d"))
+
 
 def start() -> None:
     """Start the workload (by running a commamd, for example)."""

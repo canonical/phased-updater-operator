@@ -24,7 +24,15 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
 
     def _on_install(self, event: ops.InstallEvent):
         """Install the workload on the machine."""
-        phased_updater.install()
+        self.unit.status = ops.MaintenanceStatus("Setting up environment")
+        try:
+            phased_updater.install()
+        except Exception, e:
+            self.unit.status = ops.BlockedStatus(
+                "Failed to setup the environment. Check 'juju debug-log'"
+                " for details."
+            )
+        self.unit.status = ops.ActiveStatus()
 
     def _on_start(self, event: ops.StartEvent):
         """Handle start event."""
