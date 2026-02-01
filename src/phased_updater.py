@@ -15,7 +15,7 @@ from charmlibs import apt
 
 logger = logging.getLogger(__name__)
 
-PACKAGES = [
+BACKEND_PACKAGES = [
     "python3-simplejson",
     "python3-debian",
     "python3-keyring",
@@ -23,11 +23,17 @@ PACKAGES = [
     "python3-launchpadlib",
 ]
 
+FRONTEND_PACKAGES = [
+    "nginx"
+]
+
+PACKAGES = BACKEND_PACKAGES + FRONTEND_PACKAGES
+
 APP_DIR = Path("/app")
 
 
 def install() -> None:
-    """Install the workload (by installing a snap, for example)."""
+    """Install the script, crontab, and frontend"""
     try:
         apt.update()
     except CalledProcessError as e:
