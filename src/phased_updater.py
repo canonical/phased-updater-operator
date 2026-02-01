@@ -65,7 +65,7 @@ def _install_packages():
             raise
 
 def restart() -> bool:
-    return systemd.restart("nginx")
+    return systemd.service_restart("nginx")
 
 def get_version() -> str | None:
     """Get the running version of the workload."""
