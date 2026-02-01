@@ -41,6 +41,7 @@ def install() -> None:
 
 def _install_crontab():
     logger.info("Installing crontab in /etc/cron.d")
+    source_path = Path(__file__).parent.parent / "app"
     shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
 
 def _install_app():
