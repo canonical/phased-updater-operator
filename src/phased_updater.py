@@ -72,5 +72,9 @@ def start() -> None:
 
 def get_version() -> str | None:
     """Get the running version of the workload."""
-    version = check_output([APP, "--version"]).decode("utf-8")
+    version = None
+    try:
+        version = check_output([APP, "--version"]).decode("utf-8")
+    except Exception:
+        pass
     return version
