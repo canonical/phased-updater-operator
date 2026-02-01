@@ -40,14 +40,17 @@ def install() -> None:
     _install_crontab()
 
 def _install_crontab():
+    logger.info("Installing crontab in /etc/cron.d")
     shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
 
 def _install_app():
+    logger.info("Installing application in /app")
     source_path = Path(__file__).parent.parent / "app"
     APP_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
 
 def _install_packages():
+    logger.info("Installing packages")
     try:
         apt.update()
     except CalledProcessError as e:
