@@ -1,2 +1,2 @@
 # Run 4x/day, exactly.
-42 5,11,17,23 * * *	/app/run-phased-updater
+42 5,11,17,23 * * *	/app/phased-updater
