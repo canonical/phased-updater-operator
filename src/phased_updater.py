@@ -9,9 +9,11 @@ The intention is that this module could be used outside the context of a charm.
 import logging
 import shutil
 from pathlib import Path
-from subprocess import CalledProcessError
+from subprocess import CalledProcessError, check_output
 
 from charmlibs import apt
+
+from charms.operator_libs_linux.v1.systemd import service_restart, service_running
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +32,24 @@ FRONTEND_PACKAGES = [
 PACKAGES = BACKEND_PACKAGES + FRONTEND_PACKAGES
 
 APP_DIR = Path("/app")
+APP = Path("/app/phased-updater")
 
 
 def install() -> None:
     """Install the script, crontab, and frontend"""
+    _install_packages()
+    _install_app()
+    _install_crontab()
+
+def _install_crontab():
+    shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
+
+def _install_app():
+    source_path = Path(__file__).parent.parent / "app"
+    APP_DIR.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
+
+def _install_packages():
     try:
         apt.update()
     except CalledProcessError as e:
@@ -50,25 +66,11 @@ def install() -> None:
             logger.error(f"Failed to install {package}: {e}")
             raise
 
-    # install the actual script and the module(s) it imports locally
-    source_path = Path(__file__).parent.parent / "app"
-    APP_DIR.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
-
-    # install the crontab
-    shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
-
-
 def start() -> None:
-    """Start the workload (by running a commamd, for example)."""
-    # You'll need to implement this function.
-    # Ideally, this function should only return once the workload is ready to use.
-
-
-# Functions for interacting with the workload, for example over HTTP:
-
+    # Nothing to start
+    pass
 
 def get_version() -> str | None:
     """Get the running version of the workload."""
-    # You'll need to implement this function (or remove it if not needed).
-    return None
+    version = check_output([APP, "--version"]).decode("utf-8")
+    return version
