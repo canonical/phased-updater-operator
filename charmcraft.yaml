@@ -33,6 +33,7 @@ parts:
     organize:
       lputils.py: app/lputils.py
       phased-updater: app/phased-updater
+      crontab: app/crontab
 
 # (Optional) Configuration options for the charm
 # This config section defines charm config options, and populates the Configure
