@@ -27,7 +27,7 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Setting up environment")
         try:
             phased_updater.install()
-        except Exception, e:
+        except Exception as e:
             self.unit.status = ops.BlockedStatus(
                 "Failed to setup the environment. Check 'juju debug-log'"
                 " for details."
