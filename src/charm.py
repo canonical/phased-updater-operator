@@ -37,7 +37,7 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
     def _on_start(self, event: ops.StartEvent):
         """Handle start event."""
         self.unit.status = ops.MaintenanceStatus("starting workload")
-        phased_updater.start()
+        phased_updater.restart()
         version = phased_updater.get_version()
         if version is not None:
             self.unit.set_workload_version(version)

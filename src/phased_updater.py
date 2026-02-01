@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
 
-from charmlibs import apt
+from charmlibs import apt, systemd
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +64,8 @@ def _install_packages():
             logger.error(f"Failed to install {package}: {e}")
             raise
 
-def start() -> None:
-    # Nothing to start
-    pass
+def restart() -> bool:
+    return systemd.restart("nginx")
 
 def get_version() -> str | None:
     """Get the running version of the workload."""
