@@ -50,7 +50,7 @@ def install() -> None:
     shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
 
     # install the crontab
-    shutil.copy(source_path / "crontab", Path("/etc/cron.d"))
+    shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
 
 
 def start() -> None:
