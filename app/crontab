@@ -1,2 +1,2 @@
 # Run 4x/day, exactly.
-42 5,11,17,23 * * *	/app/phased-updater
+42 5,11,17,23 * * *	/app/phased-updater && mv /app/phased-updates.html /var/www/phased-updater/
