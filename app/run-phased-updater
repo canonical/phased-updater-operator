@@ -1,0 +1,31 @@
+#! /bin/sh
+set -e
+
+case :$PATH: in
+    *:$HOME/ubuntu-archive-tools:*)
+	;;
+    *)
+	PATH="$HOME/ubuntu-archive-tools:$PATH"
+	;;
+esac
+
+OVERRIDES_DIR="$HOME/phased-update-overrides"
+
+if [ -e "$OVERRIDES_DIR/.bzr" ]; then
+    mv "$OVERRIDES_DIR" "${OVERRIDES_DIR}.old-bzr"
+fi
+
+if [ ! -d "$OVERRIDES_DIR" ]; then
+    git clone -q https://git.launchpad.net/~ubuntu-sru/+git/phased-update-overrides "$OVERRIDES_DIR"
+else
+    (cd "$OVERRIDES_DIR" && git pull -q)
+fi
+cd "$OVERRIDES_DIR"
+
+phased-updater -e
+
+OUT="$HOME/public_html/phased-updates.html"
+cp -a phased-updates.html "$OUT.new"
+mv "$OUT.new" "$OUT"
+
+exit 0
