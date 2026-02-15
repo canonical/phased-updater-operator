@@ -47,6 +47,7 @@ def _install_frontend():
     shutil.copy(source_path / "phased-updater.conf", NGINX_SITE_CONFIG_PATH)
     Path("/etc/nginx/sites-enabled/default").unlink(missing_ok=True)
     Path("/var/www/phased-updater").mkdir(exist_ok=True)
+    self.restart()
 
 def _install_crontab():
     logger.info("Installing crontab in /etc/cron.d")
