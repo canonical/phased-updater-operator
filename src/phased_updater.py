@@ -31,6 +31,7 @@ PACKAGES = BACKEND_PACKAGES + FRONTEND_PACKAGES
 
 APP_DIR = Path("/app")
 APP = Path("/app/phased-updater")
+NGINX_SITE_CONFIG_PATH = Path("/etc/nginx/sites-enabled/phased-updater.conf")
 
 
 def install() -> None:
@@ -38,6 +39,14 @@ def install() -> None:
     _install_packages()
     _install_app()
     _install_crontab()
+    _install_frontend()
+
+def _install_frontend():
+    """Install nginx config and www directory."""
+    source_path = Path(__file__).parent.parent / "app"
+    shutil.copy(source_path / "phased-updater.conf", NGINX_SITE_CONFIG_PATH)
+    Path("/etc/nginx/sites-enabled/default").unlink(missing_ok=True)
+    Path("/var/www/phased-updater").mkdir(exist_ok=True)
 
 def _install_crontab():
     logger.info("Installing crontab in /etc/cron.d")
