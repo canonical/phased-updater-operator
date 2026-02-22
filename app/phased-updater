@@ -810,7 +810,10 @@ exclusive.")
     logging.basicConfig(filename='phased-updates.log',
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
-    logging.info('Starting phased-updater')
+    startup_msg = "Starting phased-updater"
+    if options.no_act:
+        startup_msg += " in no-act mode"
+    logging.info(startup_msg)
     ubuntu = launchpad.distributions['ubuntu']
     archive = ubuntu.getArchive(name='primary')
     main()
