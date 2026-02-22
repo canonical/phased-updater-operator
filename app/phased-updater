@@ -636,7 +636,7 @@ def main():
         for pub_source in pub_sources:
             # if it was published within the last 6 hours skip it
             published = pub_source.date_published.replace(tzinfo=None)
-            age = datetime.datetime.utcnow() - published
+            age = datetime.datetime.now(datetime.UTC) - published
             src_pkg = pub_source.source_package_name
             age_days = age.days
             age_hours = age.seconds // 3600
