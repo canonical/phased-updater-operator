@@ -6,7 +6,7 @@ OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
 
 if [ ! -d "$OVERRIDES_DIR" ]; then
-    git clone -q https://git.launchpad.net/~ubuntu-sru/+git/phased-update-overrides "$OVERRIDES_DIR"
+    git clone -b main -q https://git.launchpad.net/~ubuntu-sru/+git/phased-update-overrides "$OVERRIDES_DIR"
 else
     (cd "$OVERRIDES_DIR" && git pull -q)
 fi
