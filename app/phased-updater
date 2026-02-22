@@ -599,6 +599,7 @@ def main():
 
     overrides = defaultdict(list)
     rate_overrides = []
+    logging.info(f"Reading overrides file {OVERRIDES}")
     override_file = csv.reader(open(OVERRIDES, 'r'))
     for row in override_file:
         if len(row) < 3:
@@ -616,6 +617,7 @@ def main():
 
     releases = []
     for series in ubuntu.series:
+        logging.info(f"Processing series {series.name}")
         # XXX - trusty, xenial, and bionic are ESM
         if not series.active or series.status == 'Active Development' \
            or series.name in ('trusty', 'xenial', 'bionic'):
@@ -624,6 +626,7 @@ def main():
     releases.reverse()
     issues = {}
     for release in releases:
+        logging.info(f"Processing release {release.name}")
         # We can't use release.datereleased because some SRUs are 0 day
         cdate = release.date_created
         rname = release.name
@@ -634,9 +637,10 @@ def main():
             order_by_date=True,
             pocket='Updates', status='Published', distro_series=release)
         for pub_source in pub_sources:
+            logging.info(f"Processing publication source {pub_source.display_name}")
             # if it was published within the last 6 hours skip it
             published = pub_source.date_published.replace(tzinfo=None)
-            age = datetime.datetime.now(datetime.UTC) - published
+            age = datetime.datetime.utcnow() - published
             src_pkg = pub_source.source_package_name
             age_days = age.days
             age_hours = age.seconds // 3600
