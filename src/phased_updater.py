@@ -7,6 +7,8 @@ The intention is that this module could be used outside the context of a charm.
 """
 
 import logging
+import pwd, grp
+import os
 import shutil
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
@@ -30,9 +32,13 @@ FRONTEND_PACKAGES = [
 PACKAGES = BACKEND_PACKAGES + FRONTEND_PACKAGES
 
 APP_DIR = Path("/app")
-APP = Path("/app/phased-updater")
+APP = APP_DIR / "phased-updater"
 NGINX_SITE_CONFIG_PATH = Path("/etc/nginx/sites-enabled/phased-updater.conf")
+LP_CREDENTIALS = APP_DIR / "lp_credentials.txt"
 
+# XXX
+OPERATOR_USER = "root"
+OPERATOR_GROUP = "root"
 
 def install() -> None:
     """Install the script, crontab, and frontend"""
@@ -43,6 +49,7 @@ def install() -> None:
 
 def _install_frontend():
     """Install nginx config and www directory."""
+    logger.info("Installing nginx config and www directory")
     source_path = Path(__file__).parent.parent / "app"
     shutil.copy(source_path / "phased-updater.conf", NGINX_SITE_CONFIG_PATH)
     Path("/etc/nginx/sites-enabled/default").unlink(missing_ok=True)
@@ -77,6 +84,17 @@ def _install_packages():
         except apt.PackageError as e:
             logger.error(f"Failed to install {package}: {e}")
             raise
+
+def store_launchpadlib_credentials(credentials):
+    logging.info("Storing launchpadlib credentials in %s", LP_CREDENTIALS)
+    # create LP_CREDENTIALS, chown, chmod
+    # write credentials to it
+    LP_CREDENTIALS.touch()
+    uid = pwd.getpwnam(OPERATOR_USER).pw_uid
+    gid = grp.getgrnam(OPERATOR_GROUP).gr_gid
+    LP_CREDENTIALS.chmod(0o600)
+    os.chown(LP_CREDENTIALS, uid, gid)
+    LP_CREDENTIALS.write_text(credentials)
 
 def restart() -> bool:
     return systemd.service_restart("nginx")

@@ -54,3 +54,6 @@ config:
         Acceptable values are: "info", "debug", "warning", "error" and "critical"
       default: "info"
       type: string
+    launchpadlib_secret_id:
+      type: secret
+      description: A launchpadlib secrets file, to be used with lp.login_with(credentials_file=)
