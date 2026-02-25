@@ -620,7 +620,9 @@ def main():
         logging.info(f"Processing series {series.name}")
         # XXX - trusty, xenial, and bionic are ESM
         if not series.active or series.status == 'Active Development' \
-           or series.name in ('trusty', 'xenial', 'bionic'):
+           or series.name in ('trusty', 'xenial', 'bionic') \
+           or series.name in options.ignore_releases:
+            logging.info(f"Warning: ignoring release {series.name} as requested")
             continue
         releases.append(series)
     releases.reverse()
@@ -799,12 +801,19 @@ if __name__ == '__main__':
     parser.add_option(
         "-f", "--fully-phased", default=False, action="store_true",
         help="show packages which have been fully phased")
+    parser.add_option(
+        "-i", "--ignore-releases", default=None, action="store",
+        help="Comma-separated list of releases to ignore")
     options, args = parser.parse_args()
     if options.launchpad_instance != 'production':
         LP_BASE_URL = 'https://%s.launchpad.net' % options.launchpad_instance
     if options.email and options.fully_phased:
         parser.error("Sending emails and fully phased updates are mutually \
 exclusive.")
+    if options.ignore_releases:
+        options.ignore_releases = options.ignore_releases.split(",")
+    else:
+        options.ignore_releases = []
     launchpad = Launchpad.login_with(
         'phased-updater', options.launchpad_instance, version='devel')
     logging.basicConfig(filename='phased-updates.log',
