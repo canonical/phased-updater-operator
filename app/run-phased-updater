@@ -4,6 +4,7 @@ set -e
 APP_DIR="/app"
 OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
+PHASED_UPDATER_OPTS="-e"
 
 if [ ! -d "$OVERRIDES_DIR" ]; then
     git clone -b main -q https://git.launchpad.net/~ubuntu-sru/+git/phased-update-overrides "$OVERRIDES_DIR"
@@ -12,7 +13,7 @@ else
 fi
 cd "$OVERRIDES_DIR"
 
-$APP_DIR/phased-updater -e
+$APP_DIR/phased-updater $PHASED_UPDATER_OPTS
 
 cp -a phased-updates.html "$OUT.new"
 mv "$OUT.new" "$OUT"
