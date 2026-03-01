@@ -5,6 +5,11 @@ APP_DIR="/app"
 OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
 PHASED_UPDATER_OPTS="-e"
+export LP_CREDENTIALS_FILE="$APP_DIR/lp_credentials.txt"
+if [ ! -f "$LP_CREDENTIALS_FILE" ]; then
+    echo "Error: LP_CREDENTIALS_FILE not found at $LP_CREDENTIALS_FILE"
+    exit 1
+fi
 
 if [ ! -d "$OVERRIDES_DIR" ]; then
     git clone -b main -q https://git.launchpad.net/~ubuntu-sru/+git/phased-update-overrides "$OVERRIDES_DIR"
