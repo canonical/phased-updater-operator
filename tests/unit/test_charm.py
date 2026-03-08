@@ -10,8 +10,8 @@ from charm import PhasedUpdaterOperatorCharm
 
 class MockPhasedUpdater:
 
-    def __init__(self, installed=False, running=False):
-        self.version = "1.0.0"
+    def __init__(self, version="1.0.0", installed=False, running=False):
+        self.version = version
         self.installed = installed
         self.running = False
 
@@ -35,6 +35,9 @@ class MockPhasedUpdater:
     def restart(self):
         self.stop()
         self.start()
+
+    def get_version(self):
+        return self.version
 
 
 def mock_get_version():
