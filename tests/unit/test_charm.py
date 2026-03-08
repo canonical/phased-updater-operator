@@ -49,10 +49,16 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
     assert state_out.unit_status == testing.ActiveStatus()
     assert phasedupdater.is_installed()
 
-def test_start(monkeypatch: pytest.MonkeyPatch):
+
+@pytest.fixture
+def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch):
     phasedupdater = MockPhasedUpdater(installed=True)
     monkeypatch.setattr("charm.phased_updater", phasedupdater)
+    return phasedupdater
+
+
+def test_start(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     state_out = ctx.run(ctx.on.start(), testing.State())
     assert state_out.unit_status == testing.ActiveStatus()
-    assert phasedupdater.is_running()
+    assert phasedupdater_installed.is_running()
