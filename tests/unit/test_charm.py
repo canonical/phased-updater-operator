@@ -29,6 +29,13 @@ class MockPhasedUpdater:
     def start(self):
         self.running = True
 
+    def stop(self):
+        self.running = False
+
+    def restart(self):
+        self.stop()
+        self.start()
+
 
 def mock_get_version():
     """Get a mock version string without executing the workload code."""
