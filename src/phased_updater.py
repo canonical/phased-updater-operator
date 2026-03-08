@@ -25,9 +25,7 @@ BACKEND_PACKAGES = [
     "python3-launchpadlib",
 ]
 
-FRONTEND_PACKAGES = [
-    "nginx"
-]
+FRONTEND_PACKAGES = ["nginx"]
 
 PACKAGES = BACKEND_PACKAGES + FRONTEND_PACKAGES
 
@@ -40,12 +38,14 @@ LP_CREDENTIALS = APP_DIR / "lp_credentials.txt"
 OPERATOR_USER = "root"
 OPERATOR_GROUP = "root"
 
+
 def install() -> None:
     """Install the script, crontab, and frontend"""
     _install_packages()
     _install_app()
     _install_crontab()
     _install_frontend()
+
 
 def _install_frontend():
     """Install nginx config and www directory."""
@@ -56,16 +56,19 @@ def _install_frontend():
     Path("/var/www/phased-updater").mkdir(exist_ok=True)
     restart()
 
+
 def _install_crontab():
     logger.info("Installing crontab in /etc/cron.d")
     source_path = Path(__file__).parent.parent / "app"
     shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
+
 
 def _install_app():
     logger.info("Installing application in /app")
     source_path = Path(__file__).parent.parent / "app"
     APP_DIR.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source_path, APP_DIR, dirs_exist_ok=True)
+
 
 def _install_packages():
     logger.info("Installing packages")
@@ -85,6 +88,7 @@ def _install_packages():
             logger.error(f"Failed to install {package}: {e}")
             raise
 
+
 def store_launchpadlib_credentials(credentials):
     logging.info("Storing launchpadlib credentials in %s", LP_CREDENTIALS)
     # create LP_CREDENTIALS, chown, chmod
@@ -96,8 +100,10 @@ def store_launchpadlib_credentials(credentials):
     os.chown(LP_CREDENTIALS, uid, gid)
     LP_CREDENTIALS.write_text(credentials)
 
+
 def restart() -> bool:
     return systemd.service_restart("nginx")
+
 
 def get_version() -> str | None:
     """Get the running version of the workload."""
