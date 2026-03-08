@@ -64,19 +64,23 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         try:
             launchpadlib_secret = self.model.get_secret(id=launchpadlib_secret_id)
         except (ops.SecretNotFoundError, ops.model.ModelError, TypeError):
-            logger.error(f"No 'launchpadlib_secret_id' secret named {launchpadlib_secret_id}.")
+            logger.error(
+                f"No 'launchpadlib_secret_id' secret named {launchpadlib_secret_id}."
+            )
             self.unit.status = ops.BlockedStatus(
-                f"Missing {launchpadlib_secret_id} secret.")
+                f"Missing {launchpadlib_secret_id} secret."
+            )
             return
 
-        launchpadlib_credentials = launchpadlib_secret.get_content(refresh=True).get("credentials")
+        launchpadlib_credentials = launchpadlib_secret.get_content(refresh=True).get(
+            "credentials"
+        )
         if not launchpadlib_credentials:
             logger.error("Launchpadlib credentials not found")
             self.unit.status = ops.BlockedStatus("Missing launchpadlib credentials")
             return
 
         phased_updater.store_launchpadlib_credentials(launchpadlib_credentials)
-
 
 
 if __name__ == "__main__":  # pragma: nocover
