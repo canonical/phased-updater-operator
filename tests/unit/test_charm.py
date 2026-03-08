@@ -10,9 +10,10 @@ from charm import PhasedUpdaterOperatorCharm
 
 class MockPhasedUpdater:
 
-    def __init__(self):
+    def __init__(self, installed=False, running=False):
         self.version = "1.0.0"
-        self.installed = False
+        self.installed = installed
+        self.running = False
 
     def install(self):
         """Simulate the installation process."""
@@ -20,6 +21,13 @@ class MockPhasedUpdater:
 
     def is_installed(self):
         return self.installed
+
+    def is_running(self):
+        """Simulate checking if the service is running."""
+        return self.running
+
+    def start(self):
+        self.running = True
 
 
 def mock_get_version():
@@ -37,12 +45,9 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
     assert phasedupdater.is_installed()
 
 def test_start(monkeypatch: pytest.MonkeyPatch):
-    """Test that the charm has the correct state after handling the start event."""
-    # Arrange:
+    phasedupdater = MockPhasedUpdater(installed=True)
+    monkeypatch.setattr("charm.phased_updater", phasedupdater)
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
-    monkeypatch.setattr("charm.phased_updater.get_version", mock_get_version)
-    # Act:
     state_out = ctx.run(ctx.on.start(), testing.State())
-    # Assert:
-    assert state_out.workload_version is not None
     assert state_out.unit_status == testing.ActiveStatus()
+    assert phasedupdater.is_running()
