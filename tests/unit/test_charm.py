@@ -16,6 +16,7 @@ class MockPhasedUpdater:
         self.running = running
         self.config = config
         self.launchpadlib_credentials = launchpadlib_credentials
+        self.restart_called = False
 
     def install(self):
         """Simulate the installation process."""
@@ -37,6 +38,7 @@ class MockPhasedUpdater:
     def restart(self):
         self.stop()
         self.start()
+        self.restart_called = True
 
     def store_launchpadlib_credentials(self, launchpadlib_credentials):
         self.launchpadlib_credentials = launchpadlib_credentials
@@ -73,3 +75,4 @@ def test_config_changed(phasedupdater_installed: MockPhasedUpdater):
     state_in = testing.State(config={"launchpadlib_secret_id": secret.id}, secrets=[secret])
     state_out = ctx.run(ctx.on.config_changed(), state_in)
     assert phasedupdater_installed.launchpadlib_credentials == test_credentials["credentials"]
+    assert phasedupdater_installed.restart_called == True
