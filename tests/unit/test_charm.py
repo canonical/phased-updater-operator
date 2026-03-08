@@ -40,11 +40,6 @@ class MockPhasedUpdater:
         return self.version
 
 
-def mock_get_version():
-    """Get a mock version string without executing the workload code."""
-    return "1.0.0"
-
-
 def test_install(monkeypatch: pytest.MonkeyPatch):
     phasedupdater = MockPhasedUpdater()
     monkeypatch.setattr("charm.phased_updater", phasedupdater)
