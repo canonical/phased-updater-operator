@@ -74,7 +74,7 @@ def test_config_changed(phasedupdater_installed: MockPhasedUpdater):
     test_credentials = {"credentials": "mysecret"}
     secret = testing.Secret(tracked_content=test_credentials)
     state_in = testing.State(config={"launchpadlib_secret_id": secret.id}, secrets=[secret])
-    state_out = ctx.run(ctx.on.config_changed(), state_in)
+    _ = ctx.run(ctx.on.config_changed(), state_in)
     assert phasedupdater_installed.launchpadlib_credentials == test_credentials["credentials"]
     assert phasedupdater_installed.restart_called == True
 
