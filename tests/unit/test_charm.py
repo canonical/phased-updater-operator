@@ -97,3 +97,15 @@ def test_missing_secret(phasedupdater_installed: MockPhasedUpdater):
     # restart is still called
     assert phasedupdater_installed.restart_called == True
     assert state_out.unit_status == testing.BlockedStatus(f"Missing {secret.id} secret.")
+
+def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    # Create a secret with invalid content (not a dict with 'credentials' key)
+    invalid_credentials = {"invalid_key": "value"}
+    invalid_secret = testing.Secret(tracked_content=invalid_credentials)
+    state_in = testing.State(config={"launchpadlib_secret_id": invalid_secret.id}, secrets=[invalid_secret])
+    state_out = ctx.run(ctx.on.config_changed(), state_in)
+    assert phasedupdater_installed.launchpadlib_credentials == {}
+    # restart is still called
+    assert phasedupdater_installed.restart_called == True
+    assert state_out.unit_status == testing.BlockedStatus("Missing launchpadlib credentials")
