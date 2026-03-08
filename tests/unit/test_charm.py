@@ -8,9 +8,17 @@ from ops import testing
 
 from charm import PhasedUpdaterOperatorCharm
 
+
 class MockPhasedUpdater:
 
-    def __init__(self, version="1.0.0", installed=False, running=False, config={}, launchpadlib_credentials={}):
+    def __init__(
+        self,
+        version="1.0.0",
+        installed=False,
+        running=False,
+        config={},
+        launchpadlib_credentials={},
+    ):
         self.version = version
         self.installed = installed
         self.running = running
@@ -56,11 +64,13 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
     assert state_out.unit_status == testing.ActiveStatus()
     assert phasedupdater.is_installed()
 
+
 @pytest.fixture
 def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch):
     phasedupdater = MockPhasedUpdater(installed=True)
     monkeypatch.setattr("charm.phased_updater", phasedupdater)
     return phasedupdater
+
 
 def test_start(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
@@ -69,14 +79,21 @@ def test_start(phasedupdater_installed: MockPhasedUpdater):
     assert state_out.workload_version == phasedupdater_installed.get_version()
     assert phasedupdater_installed.is_running()
 
+
 def test_config_changed(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     test_credentials = {"credentials": "mysecret"}
     secret = testing.Secret(tracked_content=test_credentials)
-    state_in = testing.State(config={"launchpadlib_secret_id": secret.id}, secrets=[secret])
+    state_in = testing.State(
+        config={"launchpadlib_secret_id": secret.id}, secrets=[secret]
+    )
     _ = ctx.run(ctx.on.config_changed(), state_in)
-    assert phasedupdater_installed.launchpadlib_credentials == test_credentials["credentials"]
+    assert (
+        phasedupdater_installed.launchpadlib_credentials
+        == test_credentials["credentials"]
+    )
     assert phasedupdater_installed.restart_called == True
+
 
 def test_missing_config(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
@@ -85,7 +102,10 @@ def test_missing_config(phasedupdater_installed: MockPhasedUpdater):
     assert phasedupdater_installed.launchpadlib_credentials == {}
     # restart is still called
     assert phasedupdater_installed.restart_called == True
-    assert state_out.unit_status == testing.BlockedStatus("Missing 'launchpadlib_secret_id' in charm config. Please set it and run 'juju config'.")
+    assert state_out.unit_status == testing.BlockedStatus(
+        "Missing 'launchpadlib_secret_id' in charm config. Please set it and run 'juju config'."
+    )
+
 
 def test_missing_secret(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
@@ -97,16 +117,23 @@ def test_missing_secret(phasedupdater_installed: MockPhasedUpdater):
     assert phasedupdater_installed.launchpadlib_credentials == {}
     # restart is still called
     assert phasedupdater_installed.restart_called == True
-    assert state_out.unit_status == testing.BlockedStatus(f"Missing {secret.id} secret.")
+    assert state_out.unit_status == testing.BlockedStatus(
+        f"Missing {secret.id} secret."
+    )
+
 
 def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     # Create a secret with invalid content (not a dict with 'credentials' key)
     invalid_credentials = {"invalid_key": "value"}
     invalid_secret = testing.Secret(tracked_content=invalid_credentials)
-    state_in = testing.State(config={"launchpadlib_secret_id": invalid_secret.id}, secrets=[invalid_secret])
+    state_in = testing.State(
+        config={"launchpadlib_secret_id": invalid_secret.id}, secrets=[invalid_secret]
+    )
     state_out = ctx.run(ctx.on.config_changed(), state_in)
     assert phasedupdater_installed.launchpadlib_credentials == {}
     # restart is still called
     assert phasedupdater_installed.restart_called == True
-    assert state_out.unit_status == testing.BlockedStatus("Missing launchpadlib credentials")
+    assert state_out.unit_status == testing.BlockedStatus(
+        "Missing launchpadlib credentials"
+    )
