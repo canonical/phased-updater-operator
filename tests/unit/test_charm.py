@@ -51,7 +51,7 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     state_in = testing.State()
     state_out = ctx.run(ctx.on.install(), state_in)
-    assert state_out.unit_status == testing.MaintenanceStatus("Setting up environment")
+    assert state_out.unit_status == testing.ActiveStatus()
     assert phasedupdater.is_installed()
 
 def test_start(monkeypatch: pytest.MonkeyPatch):
