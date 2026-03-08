@@ -66,6 +66,7 @@ def test_start(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     state_out = ctx.run(ctx.on.start(), testing.State())
     assert state_out.unit_status == testing.ActiveStatus()
+    assert state_out.workload_version == phasedupdater_installed.get_version()
     assert phasedupdater_installed.is_running()
 
 def test_config_changed(phasedupdater_installed: MockPhasedUpdater):
