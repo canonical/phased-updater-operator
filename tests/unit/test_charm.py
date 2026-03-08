@@ -13,7 +13,7 @@ class MockPhasedUpdater:
     def __init__(self, version="1.0.0", installed=False, running=False):
         self.version = version
         self.installed = installed
-        self.running = False
+        self.running = running
 
     def install(self):
         """Simulate the installation process."""
