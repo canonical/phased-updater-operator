@@ -1,27 +1,14 @@
-<!--
-Avoid using this README file for information that is maintained or published elsewhere, e.g.:
-
-* charmcraft.yaml > published on Charmhub
-* documentation > published on (or linked to from) Charmhub
-* detailed contribution guide > documentation or CONTRIBUTING.md
-
-Use links instead.
--->
-
 # phased-updater-operator
 
 Charmhub package name: phased-updater-operator
+
 More information: https://charmhub.io/phased-updater-operator
 
-Describe your charm in one or two sentences.
+This charm deploys the phased-updater service. This service controls the reach of Ubuntu Stable Release Updates (SRUs), making updates slowly available to more and more users, until they are phased to 100%. If an update starts generating too many error reports, it is halted and needs to be investigated.
 
 ## Other resources
 
-<!-- If your charm is documented somewhere else other than Charmhub, provide a link separately. -->
-
-- [Read more](https://example.com)
-
-- [Contributing](CONTRIBUTING.md) <!-- or link to other contribution documentation -->
+- [Read more about phasing updates](https://documentation.ubuntu.com/project/SRU/explanation/standard-processes/#phasing)
 
 - See the [Juju documentation](https://documentation.ubuntu.com/juju/3.6/howto/manage-charms/) for more information about developing and improving charms.
 
@@ -49,5 +36,3 @@ d) Grant access to that secret. This can only be done after the application is d
 ```
 $ juju grant-secret launchpadlib_secret phased-updater-operator
 ```
-
-
