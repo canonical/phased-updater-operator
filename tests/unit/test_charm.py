@@ -10,7 +10,6 @@ from charm import PhasedUpdaterOperatorCharm
 
 
 class MockPhasedUpdater:
-
     def __init__(
         self,
         version="1.0.0",
@@ -84,15 +83,10 @@ def test_config_changed(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     test_credentials = {"credentials": "mysecret"}
     secret = testing.Secret(tracked_content=test_credentials)
-    state_in = testing.State(
-        config={"launchpadlib_secret_id": secret.id}, secrets=[secret]
-    )
+    state_in = testing.State(config={"launchpadlib_secret_id": secret.id}, secrets=[secret])
     _ = ctx.run(ctx.on.config_changed(), state_in)
-    assert (
-        phasedupdater_installed.launchpadlib_credentials
-        == test_credentials["credentials"]
-    )
-    assert phasedupdater_installed.restart_called == True
+    assert phasedupdater_installed.launchpadlib_credentials == test_credentials["credentials"]
+    assert phasedupdater_installed.restart_called
 
 
 def test_missing_config(phasedupdater_installed: MockPhasedUpdater):
@@ -101,7 +95,7 @@ def test_missing_config(phasedupdater_installed: MockPhasedUpdater):
     state_out = ctx.run(ctx.on.config_changed(), state_in)
     assert phasedupdater_installed.launchpadlib_credentials == {}
     # restart is still called
-    assert phasedupdater_installed.restart_called == True
+    assert phasedupdater_installed.restart_called
     assert state_out.unit_status == testing.BlockedStatus(
         "Missing 'launchpadlib_secret_id' in charm config. Please set it and run 'juju config'."
     )
@@ -116,10 +110,8 @@ def test_missing_secret(phasedupdater_installed: MockPhasedUpdater):
     state_out = ctx.run(ctx.on.config_changed(), state_in)
     assert phasedupdater_installed.launchpadlib_credentials == {}
     # restart is still called
-    assert phasedupdater_installed.restart_called == True
-    assert state_out.unit_status == testing.BlockedStatus(
-        f"Missing {secret.id} secret."
-    )
+    assert phasedupdater_installed.restart_called
+    assert state_out.unit_status == testing.BlockedStatus(f"Missing {secret.id} secret.")
 
 
 def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
@@ -133,7 +125,5 @@ def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
     state_out = ctx.run(ctx.on.config_changed(), state_in)
     assert phasedupdater_installed.launchpadlib_credentials == {}
     # restart is still called
-    assert phasedupdater_installed.restart_called == True
-    assert state_out.unit_status == testing.BlockedStatus(
-        "Missing launchpadlib credentials"
-    )
+    assert phasedupdater_installed.restart_called
+    assert state_out.unit_status == testing.BlockedStatus("Missing launchpadlib credentials")

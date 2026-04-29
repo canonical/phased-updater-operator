@@ -7,9 +7,7 @@
 import logging
 
 import ops
-from ops.model import Secret
 
-# A standalone module for workload-specific logic (no charming concerns):
 import phased_updater
 
 logger = logging.getLogger(__name__)
@@ -29,10 +27,9 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("Setting up environment")
         try:
             phased_updater.install()
-        except Exception as e:
+        except Exception:
             self.unit.status = ops.BlockedStatus(
-                "Failed to setup the environment. Check 'juju debug-log'"
-                " for details."
+                "Failed to setup the environment. Check 'juju debug-log' for details."
             )
         self.unit.status = ops.ActiveStatus()
 
@@ -51,30 +48,26 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         self.unit.status = ops.ActiveStatus()
 
     def update_secrets(self):
+        """Update secrets."""
         logging.info("Updating secrets")
         try:
-            launchpadlib_secret_id = self.config["launchpadlib_secret_id"]
+            launchpadlib_secret_id = str(self.config["launchpadlib_secret_id"])
         except KeyError:
             logger.error("Missing 'launchpadlib_secret_id' in charm config.")
             self.unit.status = ops.BlockedStatus(
-                "Missing 'launchpadlib_secret_id' in charm config. Please set it and run 'juju config'."
+                "Missing 'launchpadlib_secret_id' in charm config. Please set "
+                "it and run 'juju config'."
             )
             return
 
         try:
             launchpadlib_secret = self.model.get_secret(id=launchpadlib_secret_id)
         except (ops.SecretNotFoundError, ops.model.ModelError, TypeError):
-            logger.error(
-                f"No 'launchpadlib_secret_id' secret named {launchpadlib_secret_id}."
-            )
-            self.unit.status = ops.BlockedStatus(
-                f"Missing {launchpadlib_secret_id} secret."
-            )
+            logger.error(f"No 'launchpadlib_secret_id' secret named {launchpadlib_secret_id}.")
+            self.unit.status = ops.BlockedStatus(f"Missing {launchpadlib_secret_id} secret.")
             return
 
-        launchpadlib_credentials = launchpadlib_secret.get_content(refresh=True).get(
-            "credentials"
-        )
+        launchpadlib_credentials = launchpadlib_secret.get_content(refresh=True).get("credentials")
         if not launchpadlib_credentials:
             logger.error("Launchpadlib credentials not found")
             self.unit.status = ops.BlockedStatus("Missing launchpadlib credentials")

@@ -6,9 +6,10 @@
 The intention is that this module could be used outside the context of a charm.
 """
 
+import grp
 import logging
-import pwd, grp
 import os
+import pwd
 import shutil
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
@@ -40,7 +41,7 @@ OPERATOR_GROUP = "root"
 
 
 def install() -> None:
-    """Install the script, crontab, and frontend"""
+    """Install the script, crontab, and frontend."""
     _install_packages()
     _install_app()
     _install_crontab()
@@ -90,6 +91,7 @@ def _install_packages():
 
 
 def store_launchpadlib_credentials(credentials):
+    """Store the launchpadlib credentials in a file."""
     logging.info("Storing launchpadlib credentials in %s", LP_CREDENTIALS)
     # create LP_CREDENTIALS, chown, chmod
     # write credentials to it
@@ -102,6 +104,7 @@ def store_launchpadlib_credentials(credentials):
 
 
 def restart() -> bool:
+    """Restart the nginx service."""
     return systemd.service_restart("nginx")
 
 

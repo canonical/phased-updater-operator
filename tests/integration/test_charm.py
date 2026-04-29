@@ -6,12 +6,10 @@
 
 import logging
 import pathlib
+import time
 
 import jubilant
-import pytest
-
 import requests
-import time
 
 from phased_updater import NGINX_SITE_CONFIG_PATH
 
@@ -20,6 +18,7 @@ logger = logging.getLogger(__name__)
 APP = "phased-updater-operator"
 LP_CREDENTIALS_FILE = "/app/lp_credentials.txt"
 LP_SECRET = {"credentials": "fake-credentials"}
+
 
 def test_deploy(charm: pathlib.Path, juju: jubilant.Juju):
     """Deploy the charm under test."""
@@ -49,7 +48,7 @@ def test_nginx_is_up(juju: jubilant.Juju):
             time.sleep(1)
             continue
 
-    # There won't be an index page yet, so this wil 404, but we want to make
+    # There won't be an index page yet, so this will 404, but we want to make
     # sure nginx is up and responding
     assert status_code == 404
 
