@@ -2,7 +2,6 @@ name: Integration Tests
 
 on:
   workflow_call:
-  pull_request:
 
 jobs:
   integration-tests:
@@ -22,15 +21,15 @@ jobs:
         run: sudo snap install --classic concierge
 
       - name: Prepare Juju
-        run: sudo concierge prepare --verbose --juju-channel=3/stable --charmcraft-channel=3.x/stable -p machine
+        run: sudo concierge prepare --verbose --juju-channel=3/stable --charmcraft-channel=3.x/stable -p machine --extra-snaps astral-uv
+
+      - name: Install tox
+        run: uv tool install tox --with tox-uv
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
-      - name: Install tox
-        run: pip install tox
 
       - name: Run integration tests
         run: tox -e integration
