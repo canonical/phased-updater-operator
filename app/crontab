@@ -1,2 +1,5 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 # Run 4x/day, exactly.
 42 5,11,17,23 * * *	root /app/run-phased-updater
