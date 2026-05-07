@@ -7,6 +7,7 @@
 import logging
 import os
 import pathlib
+import subprocess
 import sys
 import time
 
@@ -40,7 +41,11 @@ def charm():
     # Modify below if you're building for multiple bases or architectures.
     charm_paths = list(pathlib.Path(".").glob("*.charm"))
     if not charm_paths:
-        raise FileNotFoundError("No .charm file in current directory")
+        # let's build it...
+        subprocess.check_call(["charmcraft", "pack", "--verbose"])
+        charm_paths = list(pathlib.Path(".").glob("*.charm"))
+        if not charm_paths:
+            raise FileNotFoundError("No .charm file in current directory and a build also failed")
     if len(charm_paths) > 1:
         path_list = ", ".join(str(path) for path in charm_paths)
         raise ValueError(f"More than one .charm file in current directory: {path_list}")
