@@ -5,19 +5,21 @@
 # See https://documentation.ubuntu.com/charmcraft/stable/reference/files/charmcraft-yaml-file/
 type: charm
 name: phased-updater-operator
-title: Charm Template
-summary: A very short one-line summary of the charm.
+title: Phased Updater Operator
+summary: A charm that deploys the Phased Updater application.
 description: |
-  A single sentence that says what the charm is, concisely and memorably.
+  The Phased Updater Operator is a Juju charm that deploys and manages the
+  Phased Updater application, which allows for phased updates of Ubuntu
+  packages.
 
-  A paragraph of one to three short sentences, that describe what the charm does.
+  Phased Updates takes care of releasing Ubuntu Stable Updates in an incremental
+  and controlled manner. This allows for early detection of potential issues and
+  can halt the release of an update if a critical issue is detected, ensuring a
+  more stable and reliable experience for users.
 
-  A third paragraph that explains what need the charm meets.
+  This charm is used by Ubuntu Engineering to deploy the Phased Updater application on
+  the Ubuntu infrastructure.
 
-  Finally, a paragraph that describes whom the charm is useful for.
-
-# Documentation:
-# https://documentation.ubuntu.com/charmcraft/stable/howto/build-guides/select-platforms/
 base: ubuntu@24.04
 platforms:
   amd64:
@@ -40,23 +42,8 @@ parts:
       phased-updater.conf: app/phased-updater.conf
       run-phased-updater: app/run-phased-updater
 
-# (Optional) Configuration options for the charm
-# This config section defines charm config options, and populates the Configure
-# tab on Charmhub.
-# More information on this section at:
-# https://documentation.ubuntu.com/charmcraft/stable/reference/files/charmcraft-yaml-file/#config
-# General configuration documentation:
-# https://documentation.ubuntu.com/juju/3.6/reference/configuration/#application-configuration
 config:
   options:
-    # An example config option to customise the log level of the workload
-    log-level:
-      description: |
-        Configures the log level of gunicorn.
-
-        Acceptable values are: "info", "debug", "warning", "error" and "critical"
-      default: "info"
-      type: string
     launchpadlib_secret_id:
       type: secret
       description: A launchpadlib secrets file, to be used with lp.login_with(credentials_file=)
