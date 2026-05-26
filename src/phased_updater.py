@@ -39,6 +39,16 @@ LP_CREDENTIALS = APP_DIR / "lp_credentials.txt"
 OPERATOR_USER = "root"
 OPERATOR_GROUP = "root"
 
+CRONTAB_TEMPLATE = """\
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+http_proxy={http_proxy}
+https_proxy={https_proxy}
+
+# Run 4x/day, exactly.
+42 5,11,17,23 * * * root /app/run-phased-updater
+"""
 
 def install() -> None:
     """Install the script, crontab, and frontend."""
@@ -47,6 +57,19 @@ def install() -> None:
     _install_crontab()
     _install_frontend()
 
+
+def _get_proxies() -> dict[str, str]:
+    """Get the proxy settings from the environment."""
+    proxies = {"http_proxy": "", "https_proxy": ""}
+    http_proxy = os.environ.get("JUJU_CHARM_HTTP_PROXY")
+    if http_proxy:
+        proxies["http_proxy"] = http_proxy
+        logger.info("Setting HTTP proxy to %s", http_proxy)
+    https_proxy = os.environ.get("JUJU_CHARM_HTTPS_PROXY")
+    if https_proxy:
+        proxies["https_proxy"] = https_proxy
+        logger.info("Setting HTTPS proxy to %s", https_proxy)
+    return proxies
 
 def _install_frontend():
     """Install nginx config and www directory."""
@@ -59,10 +82,10 @@ def _install_frontend():
 
 
 def _install_crontab():
-    logger.info("Installing crontab in /etc/cron.d")
-    source_path = Path(__file__).parent.parent / "app"
-    shutil.copy(source_path / "crontab", Path("/etc/cron.d") / "phased-updater")
-
+    install_path = Path("/etc/cron.d") / "phased-updater"
+    logger.info("Installing crontab in %s", install_path)
+    with open(install_path, "w") as f:
+        f.write(CRONTAB_TEMPLATE.format(**_get_proxies()))
 
 def _install_app():
     logger.info("Installing application in /app")
