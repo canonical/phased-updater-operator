@@ -3,9 +3,10 @@
 #
 # To learn more about testing, see https://documentation.ubuntu.com/ops/latest/explanation/testing/
 
+from pathlib import Path as RealPath
+
 import pytest
 from ops import testing
-from pathlib import Path as RealPath
 
 import phased_updater
 from charm import PhasedUpdaterOperatorCharm

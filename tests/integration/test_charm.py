@@ -71,7 +71,7 @@ def test_lp_secret_is_valid_and_in_place(juju: jubilant.Juju):
 
 
 def test_crontab_no_proxy(juju: jubilant.Juju):
-    """Test that when no juju proxy model config is set, the crontab contains placeholder comments."""
+    """Test that when no juju proxy config is set, the crontab contains placeholder comments."""
     result = juju.ssh(f"{APP}/0", f"sudo cat {CRON_FILE}")
     assert NO_HTTP_PROXY in result
     assert NO_HTTPS_PROXY in result
