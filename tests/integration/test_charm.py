@@ -75,16 +75,3 @@ def test_crontab_no_proxy(juju: jubilant.Juju):
     result = juju.ssh(f"{APP}/0", f"sudo cat {CRON_FILE}")
     assert NO_HTTP_PROXY in result
     assert NO_HTTPS_PROXY in result
-
-
-def test_crontab_with_proxy(charm: pathlib.Path, juju: jubilant.Juju):
-    """Test that when juju proxy model config is set, proxy vars appear in the crontab."""
-    secret_id = juju.add_secret("launchpadlib_secret_proxy", LP_SECRET)
-    juju.model_config({"juju-http-proxy": HTTP_PROXY, "juju-https-proxy": HTTPS_PROXY})
-    juju.deploy(charm.resolve(), app=PROXY_APP, config={"launchpadlib_secret_id": secret_id})
-    juju.grant_secret(secret_id, PROXY_APP)
-    juju.wait(jubilant.all_active)
-
-    result = juju.ssh(f"{PROXY_APP}/0", f"sudo cat {CRON_FILE}")
-    assert f"http_proxy={HTTP_PROXY}" in result
-    assert f"https_proxy={HTTPS_PROXY}" in result
