@@ -3,9 +3,12 @@
 #
 # To learn more about testing, see https://documentation.ubuntu.com/ops/latest/explanation/testing/
 
+from pathlib import Path as RealPath
+
 import pytest
 from ops import testing
 
+import phased_updater
 from charm import PhasedUpdaterOperatorCharm
 
 
@@ -127,3 +130,60 @@ def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
     # restart is still called
     assert phasedupdater_installed.restart_called
     assert state_out.unit_status == testing.BlockedStatus("Missing launchpadlib credentials")
+
+
+@pytest.fixture
+def crontab_path(monkeypatch, tmp_path):
+    """Redirect phased_updater.Path("/etc/cron.d") to tmp_path."""
+
+    def fake_path(p):
+        if str(p) == "/etc/cron.d":
+            return tmp_path
+        return RealPath(p)
+
+    monkeypatch.setattr(phased_updater, "Path", fake_path)
+    return tmp_path / "phased-updater"
+
+
+def test_crontab_http_proxy_only(monkeypatch, crontab_path):
+    monkeypatch.setenv("JUJU_CHARM_HTTP_PROXY", "http://proxy.example.com:3128")
+    monkeypatch.delenv("JUJU_CHARM_HTTPS_PROXY", raising=False)
+
+    phased_updater._install_crontab()
+
+    content = crontab_path.read_text()
+    assert "http_proxy=http://proxy.example.com:3128" in content
+    assert phased_updater.NO_HTTPS_PROXY in content
+
+
+def test_crontab_https_proxy_only(monkeypatch, crontab_path):
+    monkeypatch.delenv("JUJU_CHARM_HTTP_PROXY", raising=False)
+    monkeypatch.setenv("JUJU_CHARM_HTTPS_PROXY", "https://proxy.example.com:3128")
+
+    phased_updater._install_crontab()
+
+    content = crontab_path.read_text()
+    assert "https_proxy=https://proxy.example.com:3128" in content
+    assert phased_updater.NO_HTTP_PROXY in content
+
+
+def test_crontab_both_proxies(monkeypatch, crontab_path):
+    monkeypatch.setenv("JUJU_CHARM_HTTP_PROXY", "http://proxy.example.com:3128")
+    monkeypatch.setenv("JUJU_CHARM_HTTPS_PROXY", "https://proxy.example.com:3128")
+
+    phased_updater._install_crontab()
+
+    content = crontab_path.read_text()
+    assert "http_proxy=http://proxy.example.com:3128" in content
+    assert "https_proxy=https://proxy.example.com:3128" in content
+
+
+def test_crontab_no_proxies(monkeypatch, crontab_path):
+    monkeypatch.delenv("JUJU_CHARM_HTTP_PROXY", raising=False)
+    monkeypatch.delenv("JUJU_CHARM_HTTPS_PROXY", raising=False)
+
+    phased_updater._install_crontab()
+
+    content = crontab_path.read_text()
+    assert phased_updater.NO_HTTP_PROXY in content
+    assert phased_updater.NO_HTTPS_PROXY in content

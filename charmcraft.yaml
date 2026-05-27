@@ -38,7 +38,6 @@ parts:
     organize:
       lputils.py: app/lputils.py
       phased-updater: app/phased-updater
-      crontab: app/crontab
       phased-updater.conf: app/phased-updater.conf
       run-phased-updater: app/run-phased-updater
 
