@@ -16,9 +16,6 @@ from phased_updater import NGINX_SITE_CONFIG_PATH, NO_HTTP_PROXY, NO_HTTPS_PROXY
 logger = logging.getLogger(__name__)
 
 APP = "phased-updater-operator"
-# just another name to deploy the charm with proxy settings, so we can test
-# both scenarios in the same test run
-PROXY_APP = "phased-updater-proxy"
 CRON_FILE = "/etc/cron.d/phased-updater"
 LP_CREDENTIALS_FILE = "/app/lp_credentials.txt"
 LP_SECRET = {"credentials": "fake-credentials"}
