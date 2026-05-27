@@ -53,12 +53,14 @@ CRONTAB_TEMPLATE = """\
 42 5,11,17,23 * * * root /app/run-phased-updater
 """
 
+
 def install() -> None:
     """Install the script, crontab, and frontend."""
     _install_packages()
     _install_app()
     _install_crontab()
     _install_frontend()
+
 
 def _install_frontend():
     """Install nginx config and www directory."""
@@ -68,6 +70,7 @@ def _install_frontend():
     Path("/etc/nginx/sites-enabled/default").unlink(missing_ok=True)
     Path("/var/www/phased-updater").mkdir(exist_ok=True)
     restart()
+
 
 def _install_crontab():
     install_path = Path("/etc/cron.d") / "phased-updater"
@@ -86,6 +89,7 @@ def _install_crontab():
     with open(install_path, "w") as f:
         f.write(CRONTAB_TEMPLATE.format(**proxies))
     os.chmod(install_path, 0o644)
+
 
 def _install_app():
     logger.info("Installing application in /app")
