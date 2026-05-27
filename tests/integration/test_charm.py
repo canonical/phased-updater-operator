@@ -11,13 +11,19 @@ import time
 import jubilant
 import requests
 
-from phased_updater import NGINX_SITE_CONFIG_PATH
+from phased_updater import NGINX_SITE_CONFIG_PATH, NO_HTTP_PROXY, NO_HTTPS_PROXY
 
 logger = logging.getLogger(__name__)
 
 APP = "phased-updater-operator"
+# just another name to deploy the charm with proxy settings, so we can test
+# both scenarios in the same test run
+PROXY_APP = "phased-updater-proxy"
+CRON_FILE = "/etc/cron.d/phased-updater"
 LP_CREDENTIALS_FILE = "/app/lp_credentials.txt"
 LP_SECRET = {"credentials": "fake-credentials"}
+HTTP_PROXY = "http://squid.internal:3128"
+HTTPS_PROXY = "https://squid.internal:3128"
 
 
 def test_deploy(charm: pathlib.Path, juju: jubilant.Juju):
@@ -62,3 +68,23 @@ def test_lp_secret_is_valid_and_in_place(juju: jubilant.Juju):
     juju.ssh(f"{APP}/0", f"ls -l {LP_CREDENTIALS_FILE}")
     result = juju.ssh(f"{APP}/0", f"sudo cat {LP_CREDENTIALS_FILE}")
     assert result.strip() == LP_SECRET["credentials"]
+
+
+def test_crontab_no_proxy(juju: jubilant.Juju):
+    """Test that when no juju proxy model config is set, the crontab contains placeholder comments."""
+    result = juju.ssh(f"{APP}/0", f"sudo cat {CRON_FILE}")
+    assert NO_HTTP_PROXY in result
+    assert NO_HTTPS_PROXY in result
+
+
+def test_crontab_with_proxy(charm: pathlib.Path, juju: jubilant.Juju):
+    """Test that when juju proxy model config is set, proxy vars appear in the crontab."""
+    secret_id = juju.add_secret("launchpadlib_secret_proxy", LP_SECRET)
+    juju.model_config({"juju-http-proxy": HTTP_PROXY, "juju-https-proxy": HTTPS_PROXY})
+    juju.deploy(charm.resolve(), app=PROXY_APP, config={"launchpadlib_secret_id": secret_id})
+    juju.grant_secret(secret_id, PROXY_APP)
+    juju.wait(jubilant.all_active)
+
+    result = juju.ssh(f"{PROXY_APP}/0", f"sudo cat {CRON_FILE}")
+    assert f"http_proxy={HTTP_PROXY}" in result
+    assert f"https_proxy={HTTPS_PROXY}" in result
