@@ -68,9 +68,10 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch):
+def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch, tmp_path):
     phasedupdater = MockPhasedUpdater(installed=True)
     monkeypatch.setattr("charm.phased_updater", phasedupdater)
+    monkeypatch.setattr("charm.CONFIG_FILE", tmp_path / "config")
     return phasedupdater
 
 
