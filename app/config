@@ -1,3 +1,6 @@
+# Copyright 2026 Canonical Ltd.
+# See LICENSE file for licensing details.
+
 # Configuration file for run-phased-updater
 # run-phased-updater will source this file and construct the command-line
 # for phased-updater.
