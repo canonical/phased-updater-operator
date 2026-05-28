@@ -1,0 +1,13 @@
+# Configuration file for run-phased-updater
+# run-phased-updater will source this file and construct the command-line
+# for phased-updater.
+
+# Send out an email to uploaders if an update is stopped due to errors
+SEND_EMAIL="yes"
+
+# Run without changing any phasing
+DRY_RUN="no"
+
+# List of ubuntu releases to ignore, comma-separated.
+# Example: focal,jammy
+IGNORE_RELEASES=""
