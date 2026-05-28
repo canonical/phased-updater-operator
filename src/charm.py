@@ -12,6 +12,23 @@ import phased_updater
 
 logger = logging.getLogger(__name__)
 
+# XXX
+CONFIG_FILE = "/app/config"
+CONFIG_TEMPLATE = """\
+# Configuration file for run-phased-updater
+# run-phased-updater will source this file and construct the command-line
+# for phased-updater.
+
+# Send out an email to uploaders if an update is stopped due to errors
+SEND_EMAIL={send_email}
+
+# Run without changing any phasing
+DRY_RUN={dry_run}
+
+# List of ubuntu releases to ignore, comma-separated.
+# Example: focal,jammy
+IGNORE_RELEASES={ignore_releases}
+"""
 
 class PhasedUpdaterOperatorCharm(ops.CharmBase):
     """Charm the application."""
@@ -36,6 +53,7 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
     def _on_config_changed(self, event: ops.ConfigChangedEvent):
         """Handle config changes."""
         self.update_secrets()
+        self.update_config()
         phased_updater.restart()
 
     def _on_start(self, event: ops.StartEvent):
@@ -46,6 +64,22 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         if version is not None:
             self.unit.set_workload_version(version)
         self.unit.status = ops.ActiveStatus()
+
+    def update_config(self):
+        """Update configuration file from charm config."""
+        logging.info("Updating configuration")
+        send_email = self.config["send_email"]
+        dry_run = self.config["dry_run"]
+        ignore_releases = self.config["ignore_releases"]
+        with open(CONFIG_FILE, "w") as config_file:
+            config_file.write(
+                CONFIG_TEMPLATE.format(
+                    send_email=send_email,
+                    dry_run=dry_run,
+                    ignore_releases=",".join(ignore_releases),
+                )
+            )
+
 
     def update_secrets(self):
         """Update secrets."""
