@@ -70,13 +70,14 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         logging.info("Updating configuration")
         send_email = self.config["send_email"]
         dry_run = self.config["dry_run"]
+        # XXX assert the format of ignore_releases is correct (comma-separated list of releases)
         ignore_releases = self.config["ignore_releases"]
         with open(CONFIG_FILE, "w") as config_file:
             config_file.write(
                 CONFIG_TEMPLATE.format(
                     send_email=send_email,
                     dry_run=dry_run,
-                    ignore_releases=",".join(ignore_releases),
+                    ignore_releases=ignore_releases,
                 )
             )
 
