@@ -10,18 +10,18 @@ OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
 
 # Defaults
-SEND_EMAIL="yes"
-DRY_RUN="no"
+SEND_EMAIL="true"
+DRY_RUN="false"
 IGNORE_RELEASES=""
 PHASED_UPDATER_OPTS=""
 
 [ -f "$APP_DIR/config" ] && . "$APP_DIR/config"
 
-if [ "${SEND_EMAIL}" = "yes" ]; then
+if [ "${SEND_EMAIL}" = "true" ]; then
     PHASED_UPDATER_OPTS="-e"
 fi
 
-if [ "${DRY_RUN}" = "yes" ]; then
+if [ "${DRY_RUN}" = "true" ]; then
     PHASED_UPDATER_OPTS="$PHASED_UPDATER_OPTS -n"
 fi
 
