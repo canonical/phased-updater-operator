@@ -9,9 +9,24 @@ APP_DIR="/app"
 OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
 
+# Defaults
+SEND_EMAIL="yes"
+DRY_RUN="no"
+IGNORE_RELEASES=""
+PHASED_UPDATER_OPTS=""
+
 [ -f "$APP_DIR/config" ] && . "$APP_DIR/config"
-if [ ! -n "$PHASED_UPDATER_OPTS" ]; then
+
+if [ "${SEND_EMAIL}" = "yes" ]; then
     PHASED_UPDATER_OPTS="-e"
+fi
+
+if [ "${DRY_RUN}" = "yes" ]; then
+    PHASED_UPDATER_OPTS="$PHASED_UPDATER_OPTS -n"
+fi
+
+if [ -n "$IGNORE_RELEASES" ]; then
+    PHASED_UPDATER_OPTS="$PHASED_UPDATER_OPTS -i $IGNORE_RELEASES"
 fi
 
 export LP_CREDENTIALS_FILE="$APP_DIR/lp_credentials.txt"
