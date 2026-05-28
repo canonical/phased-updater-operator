@@ -133,6 +133,43 @@ def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
     assert state_out.unit_status == testing.BlockedStatus("Missing launchpadlib credentials")
 
 
+@pytest.mark.parametrize(
+    "send_email,dry_run,ignore_releases",
+    [
+        (True, False, ""),
+        (True, True, ""),
+        (False, False, ""),
+        (False, True, ""),
+        (True, False, "focal"),
+        (True, False, "focal,jammy"),
+        (False, True, "focal,jammy,questing"),
+    ],
+)
+def test_update_config(
+    phasedupdater_installed: MockPhasedUpdater,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+    send_email: bool,
+    dry_run: bool,
+    ignore_releases: str,
+):
+    """Test update_config() writes the correct values to the config file."""
+    monkeypatch.setattr(PhasedUpdaterOperatorCharm, "update_secrets", lambda self: None)
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    config = {
+        "send_email": send_email,
+        "dry_run": dry_run,
+        "ignore_releases": ignore_releases,
+    }
+    ctx.run(ctx.on.config_changed(), testing.State(config=config))
+    config_file = tmp_path / "config"
+    assert config_file.exists()
+    content = config_file.read_text()
+    assert f"SEND_EMAIL={send_email}\n" in content
+    assert f"DRY_RUN={dry_run}\n" in content
+    assert f"IGNORE_RELEASES={ignore_releases}\n" in content
+
+
 @pytest.fixture
 def crontab_path(monkeypatch, tmp_path):
     """Redirect phased_updater.Path("/etc/cron.d") to tmp_path."""
