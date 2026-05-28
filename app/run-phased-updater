@@ -8,7 +8,12 @@ set -e
 APP_DIR="/app"
 OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
-PHASED_UPDATER_OPTS="-e"
+
+[ -f "$APP_DIR/config" ] && . "$APP_DIR/config"
+if [ ! -n "$PHASED_UPDATER_OPTS" ]; then
+    PHASED_UPDATER_OPTS="-e"
+fi
+
 export LP_CREDENTIALS_FILE="$APP_DIR/lp_credentials.txt"
 if [ ! -f "$LP_CREDENTIALS_FILE" ]; then
     echo "Error: LP_CREDENTIALS_FILE not found at $LP_CREDENTIALS_FILE"
