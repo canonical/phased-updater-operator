@@ -3,10 +3,10 @@
 # for phased-updater.
 
 # Send out an email to uploaders if an update is stopped due to errors
-SEND_EMAIL="yes"
+SEND_EMAIL="true"
 
 # Run without changing any phasing
-DRY_RUN="no"
+DRY_RUN="false"
 
 # List of ubuntu releases to ignore, comma-separated.
 # Example: focal,jammy
