@@ -15,6 +15,7 @@ DRY_RUN="false"
 IGNORE_RELEASES=""
 PHASED_UPDATER_OPTS=""
 
+# shellcheck source=/dev/null
 [ -f "$APP_DIR/config" ] && . "$APP_DIR/config"
 
 if [ "${SEND_EMAIL,,}" = "true" ]; then
@@ -42,7 +43,7 @@ else
 fi
 cd "$OVERRIDES_DIR"
 
-$APP_DIR/phased-updater $PHASED_UPDATER_OPTS
+"$APP_DIR/phased-updater" "$PHASED_UPDATER_OPTS"
 
 cp -a phased-updates.html "$OUT.new"
 mv "$OUT.new" "$OUT"
