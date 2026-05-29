@@ -68,9 +68,10 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture
-def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch):
+def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch, tmp_path):
     phasedupdater = MockPhasedUpdater(installed=True)
     monkeypatch.setattr("charm.phased_updater", phasedupdater)
+    monkeypatch.setattr("charm.CONFIG_FILE", tmp_path / "config")
     return phasedupdater
 
 
@@ -117,6 +118,17 @@ def test_missing_secret(phasedupdater_installed: MockPhasedUpdater):
     assert state_out.unit_status == testing.BlockedStatus(f"Missing {secret.id} secret.")
 
 
+def test_secret_changed(phasedupdater_installed: MockPhasedUpdater):
+    """Test that secret_changed updates credentials, ends active, and does NOT restart."""
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    test_credentials = {"credentials": "anothersecret"}
+    secret = testing.Secret(tracked_content=test_credentials)
+    state_in = testing.State(config={"launchpadlib_secret_id": secret.id}, secrets=[secret])
+    state_out = ctx.run(ctx.on.secret_changed(secret=secret), state_in)
+    assert phasedupdater_installed.launchpadlib_credentials == test_credentials["credentials"]
+    assert state_out.unit_status == testing.ActiveStatus()
+
+
 def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
     # Create a secret with invalid content (not a dict with 'credentials' key)
@@ -130,6 +142,43 @@ def test_invalid_secret_content(phasedupdater_installed: MockPhasedUpdater):
     # restart is still called
     assert phasedupdater_installed.restart_called
     assert state_out.unit_status == testing.BlockedStatus("Missing launchpadlib credentials")
+
+
+@pytest.mark.parametrize(
+    "send_email,dry_run,ignore_releases",
+    [
+        (True, False, ""),
+        (True, True, ""),
+        (False, False, ""),
+        (False, True, ""),
+        (True, False, "focal"),
+        (True, False, "focal,jammy"),
+        (False, True, "focal,jammy,questing"),
+    ],
+)
+def test_update_config(
+    phasedupdater_installed: MockPhasedUpdater,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path,
+    send_email: bool,
+    dry_run: bool,
+    ignore_releases: str,
+):
+    """Test update_config() writes the correct values to the config file."""
+    monkeypatch.setattr(PhasedUpdaterOperatorCharm, "update_secrets", lambda self: None)
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    config = {
+        "send_email": send_email,
+        "dry_run": dry_run,
+        "ignore_releases": ignore_releases,
+    }
+    ctx.run(ctx.on.config_changed(), testing.State(config=config))
+    config_file = tmp_path / "config"
+    assert config_file.exists()
+    content = config_file.read_text()
+    assert f"SEND_EMAIL={send_email}\n" in content
+    assert f"DRY_RUN={dry_run}\n" in content
+    assert f"IGNORE_RELEASES={ignore_releases}\n" in content
 
 
 @pytest.fixture

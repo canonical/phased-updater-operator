@@ -40,9 +40,22 @@ parts:
       phased-updater: app/phased-updater
       phased-updater.conf: app/phased-updater.conf
       run-phased-updater: app/run-phased-updater
+      config: app/config
 
 config:
   options:
     launchpadlib_secret_id:
       type: secret
       description: A launchpadlib secrets file, to be used with lp.login_with(credentials_file=)
+    dry_run:
+      type: boolean
+      default: false
+      description: If true, phased-updates will run without making any phasing changes, but will still check all updates.
+    send_email:
+      type: boolean
+      default: true
+      description: If true, phased-updates will notify uploaders via email if their update is blocked by phasing.
+    ignore_releases:
+      type: string
+      default: ""
+      description: A comma-separated list of ubuntu releases to ignore when checking for phasing. Mostly used to make troubleshooting faster by reducing the number of releases to process and speed up a full run.

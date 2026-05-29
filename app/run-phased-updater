@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Copyright 2026 Canonical Ltd.
 # See LICENSE file for licensing details.
@@ -8,7 +8,28 @@ set -e
 APP_DIR="/app"
 OVERRIDES_DIR="$APP_DIR/phased-update-overrides"
 OUT="/var/www/phased-updater/phased-updates.html"
-PHASED_UPDATER_OPTS="-e"
+
+# Defaults
+SEND_EMAIL="true"
+DRY_RUN="false"
+IGNORE_RELEASES=""
+PHASED_UPDATER_OPTS=""
+
+# shellcheck source=/dev/null
+[ -f "$APP_DIR/config" ] && . "$APP_DIR/config"
+
+if [ "${SEND_EMAIL,,}" = "true" ]; then
+    PHASED_UPDATER_OPTS="-e"
+fi
+
+if [ "${DRY_RUN,,}" = "true" ]; then
+    PHASED_UPDATER_OPTS="$PHASED_UPDATER_OPTS -n"
+fi
+
+if [ -n "$IGNORE_RELEASES" ]; then
+    PHASED_UPDATER_OPTS="$PHASED_UPDATER_OPTS -i ${IGNORE_RELEASES,,}"
+fi
+
 export LP_CREDENTIALS_FILE="$APP_DIR/lp_credentials.txt"
 if [ ! -f "$LP_CREDENTIALS_FILE" ]; then
     echo "Error: LP_CREDENTIALS_FILE not found at $LP_CREDENTIALS_FILE"
@@ -22,7 +43,7 @@ else
 fi
 cd "$OVERRIDES_DIR"
 
-$APP_DIR/phased-updater $PHASED_UPDATER_OPTS
+"$APP_DIR/phased-updater" "$PHASED_UPDATER_OPTS"
 
 cp -a phased-updates.html "$OUT.new"
 mv "$OUT.new" "$OUT"
