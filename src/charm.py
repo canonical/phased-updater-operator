@@ -12,8 +12,7 @@ import phased_updater
 
 logger = logging.getLogger(__name__)
 
-# XXX
-CONFIG_FILE = "/app/config"
+CONFIG_FILE = phased_updater.APP_DIR / "config"
 CONFIG_TEMPLATE = """\
 # Configuration file for run-phased-updater
 # run-phased-updater will source this file and construct the command-line
