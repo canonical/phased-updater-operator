@@ -43,7 +43,9 @@ else
 fi
 cd "$OVERRIDES_DIR"
 
-"$APP_DIR/phased-updater" "$PHASED_UPDATER_OPTS"
+# Disabled because I need the spaces, as this var holds command line parameters
+# shellcheck disable=SC2086
+"$APP_DIR/phased-updater" $PHASED_UPDATER_OPTS
 
 cp -a phased-updates.html "$OUT.new"
 mv "$OUT.new" "$OUT"
