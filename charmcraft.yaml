@@ -59,3 +59,9 @@ config:
       type: string
       default: ""
       description: A comma-separated list of ubuntu releases to ignore when checking for phasing. Mostly used to make troubleshooting faster by reducing the number of releases to process and speed up a full run.
+
+requires:
+  ingress:
+    interface: ingress
+    limit: 1
+    optional: true
