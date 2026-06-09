@@ -24,25 +24,23 @@ Additionally, generate an html report regarding state of phasing of
 packages and email uploaders regarding issues with their uploads.
 """
 
-import apt
 import codecs
 import csv
 import datetime
-import lazr
 import logging
 import os
-import simplejson as json
 import time
-
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 from email import utils
 from functools import cmp_to_key
 from optparse import OptionParser
 from urllib.parse import quote
 from urllib.request import urlopen
 
+import apt
+import lazr
 import lputils
-
+import simplejson as json
 from launchpadlib.launchpad import Launchpad
 
 
@@ -85,8 +83,8 @@ def set_pup(current_pup, new_pup, release, suite, src_pkg):
 
 
 def generate_html_report(releases, buckets):
-    import tempfile
     import shutil
+    import tempfile
 
     with tempfile.NamedTemporaryFile(mode="w") as report:
         report.write(
