@@ -5,19 +5,20 @@
 """Charm the application."""
 
 import logging
+import socket
 
 import ops
+from charms.traefik_k8s.v2.ingress import (
+    IngressPerAppReadyEvent,
+    IngressPerAppRequirer,
+    IngressPerAppRevokedEvent,
+)
 
 import phased_updater
 
-import socket
-
-from charms.traefik_k8s.v2.ingress import (IngressPerAppRequirer,
-  IngressPerAppReadyEvent, IngressPerAppRevokedEvent)
-
 logger = logging.getLogger(__name__)
 
-PORT = 80 # must match the nginx config (TODO)
+PORT = 80  # must match the nginx config (TODO)
 CONFIG_FILE = phased_updater.APP_DIR / "config"
 CONFIG_TEMPLATE = """\
 # Configuration file for run-phased-updater
@@ -35,13 +36,16 @@ DRY_RUN={dry_run}
 IGNORE_RELEASES={ignore_releases}
 """
 
+
 class PhasedUpdaterOperatorCharm(ops.CharmBase):
     """Charm the application."""
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
 
-        self.ingress = IngressPerAppRequirer(self, port=PORT, strip_prefix=True, relation_name="ingress")
+        self.ingress = IngressPerAppRequirer(
+            self, port=PORT, strip_prefix=True, relation_name="ingress"
+        )
 
         framework.observe(self.on.install, self._on_install)
         framework.observe(self.on.start, self._on_start)
