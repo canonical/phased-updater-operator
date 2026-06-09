@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Increment the Phased-Update-Percentage for a package
+"""Increment the Phased-Update-Percentage for a package.
 
 Check to see whether or not there is a regression (new crash bucket or
 increase in rate of errors about a package) using errors.ubuntu.com and if
