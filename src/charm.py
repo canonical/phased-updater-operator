@@ -10,8 +10,11 @@ import ops
 
 import phased_updater
 
+import socket
+
 logger = logging.getLogger(__name__)
 
+PORT = 80 # must match the nginx config (TODO)
 CONFIG_FILE = phased_updater.APP_DIR / "config"
 CONFIG_TEMPLATE = """\
 # Configuration file for run-phased-updater
@@ -34,10 +37,25 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
+
+        self.ingress = IngressRequirer(self, port=PORT, strip_prefix=True, relation_name="ingress")
+
         framework.observe(self.on.install, self._on_install)
         framework.observe(self.on.start, self._on_start)
         framework.observe(self.on.config_changed, self._on_config_changed)
         framework.observe(self.on.secret_changed, self._on_secret_changed)
+
+        # there isn't really anything to configure here for ingress
+        framework.observe(self.ingress.on.ready, self._on_ingress_changed)
+        framework.observe(self.ingress.on.revoked, self._on_ingress_changed)
+
+    def _on_ingress_changed(self, event: ops.IngressReadyEvent | ops.IngressRevokedEvent):
+        """Handle ingress changes."""
+        self.unit.status = ops.MaintenanceStatus("Updating ingress configuration")
+        logging.info("Received ingress event: %s", event)
+        url = self._get_external_url()
+        logging.info("External URL is: %s", url)
+        self.unit.status = ops.ActiveStatus()
 
     def _on_install(self, event: ops.InstallEvent):
         """Install the workload on the machine."""
@@ -87,6 +105,15 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
                 )
             )
 
+    def _get_external_url(self) -> str:
+        """Report URL to access Phased Updater report."""
+        external_url = f"http://{socket.getfqdn()}:{PORT}"
+        if binding := self.model.get_binding("juju-info"):
+            unit_ip = str(binding.network.bind_address)
+            external_url = f"http://{unit_ip}:{PORT}"
+        if self.ingress.url:
+            external_url = self.ingress.url
+        return external_url
 
     def update_secrets(self):
         """Update secrets."""
