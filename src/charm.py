@@ -12,6 +12,9 @@ import phased_updater
 
 import socket
 
+from charms.traefik_k8s.v2.ingress import (IngressPerAppRequirer,
+  IngressPerAppReadyEvent, IngressPerAppRevokedEvent)
+
 logger = logging.getLogger(__name__)
 
 PORT = 80 # must match the nginx config (TODO)
@@ -38,7 +41,7 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
 
-        self.ingress = IngressRequirer(self, port=PORT, strip_prefix=True, relation_name="ingress")
+        self.ingress = IngressPerAppRequirer(self, port=PORT, strip_prefix=True, relation_name="ingress")
 
         framework.observe(self.on.install, self._on_install)
         framework.observe(self.on.start, self._on_start)
@@ -46,16 +49,14 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         framework.observe(self.on.secret_changed, self._on_secret_changed)
 
         # there isn't really anything to configure here for ingress
-        framework.observe(self.ingress.on.ready, self._on_ingress_changed)
-        framework.observe(self.ingress.on.revoked, self._on_ingress_changed)
+        framework.observe(self.ingress.on.ready, self._on_ingress_ready)
+        framework.observe(self.ingress.on.revoked, self._on_ingress_revoked)
 
-    def _on_ingress_changed(self, event: ops.IngressReadyEvent | ops.IngressRevokedEvent):
-        """Handle ingress changes."""
-        self.unit.status = ops.MaintenanceStatus("Updating ingress configuration")
-        logging.info("Received ingress event: %s", event)
-        url = self._get_external_url()
-        logging.info("External URL is: %s", url)
-        self.unit.status = ops.ActiveStatus()
+    def _on_ingress_ready(self, event: IngressPerAppReadyEvent):
+        logger.info("This app's ingress URL: %s", event.url)
+
+    def _on_ingress_revoked(self, event: IngressPerAppRevokedEvent):
+        logger.info("This app no longer has ingress")
 
     def _on_install(self, event: ops.InstallEvent):
         """Install the workload on the machine."""
