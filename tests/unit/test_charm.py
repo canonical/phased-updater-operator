@@ -256,7 +256,10 @@ def test_ingress_ready(caplog):
     )
     with caplog.at_level(logging.INFO, logger="charm"):
         ctx.run(ctx.on.relation_changed(relation=ingress_relation), state_in)
-    assert any(record.message == f"This app's ingress URL: {ingress_url}" for record in caplog.records)
+    assert any(
+        record.message == f"This app's ingress URL: {ingress_url}" for record in caplog.records
+    )
+
 
 def test_ingress_not_yet_ready():
     """Test that the charm handles relation_changed when the provider hasn't published a URL yet."""

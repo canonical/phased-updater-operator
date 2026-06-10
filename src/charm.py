@@ -5,7 +5,6 @@
 """Charm the application."""
 
 import logging
-import socket
 
 import ops
 from charms.traefik_k8s.v2.ingress import (
@@ -109,7 +108,6 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
                     ignore_releases=ignore_releases,
                 )
             )
-
 
     def update_secrets(self):
         """Update secrets."""
