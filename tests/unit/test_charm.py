@@ -262,7 +262,7 @@ def test_ingress_ready(caplog):
 
 
 def test_ingress_not_yet_ready():
-    """Test that the charm handles relation_changed when the provider hasn't published a URL yet."""
+    """Test relation_changed without a URL from the provider yet."""
     ingress_relation = testing.Relation(
         endpoint="ingress",
         remote_app_data={},
