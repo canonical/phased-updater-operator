@@ -10,7 +10,7 @@ import pytest
 from ops import testing
 
 import phased_updater
-from charm import PhasedUpdaterOperatorCharm
+from charm import PORT, PhasedUpdaterOperatorCharm
 
 
 class MockPhasedUpdater:
@@ -82,6 +82,7 @@ def test_start(phasedupdater_installed: MockPhasedUpdater):
     assert state_out.unit_status == testing.ActiveStatus()
     assert state_out.workload_version == phasedupdater_installed.get_version()
     assert phasedupdater_installed.is_running()
+    assert testing.TCPPort(port=PORT) in state_out.opened_ports
 
 
 def test_config_changed(phasedupdater_installed: MockPhasedUpdater):
