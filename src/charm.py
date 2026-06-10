@@ -91,6 +91,7 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
         version = phased_updater.get_version()
         if version is not None:
             self.unit.set_workload_version(version)
+        self.unit.set_ports(PORT)
         self.unit.status = ops.ActiveStatus()
 
     def update_config(self):
