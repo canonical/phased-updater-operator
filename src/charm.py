@@ -110,15 +110,6 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
                 )
             )
 
-    def _get_external_url(self) -> str:
-        """Report URL to access Phased Updater report."""
-        external_url = f"http://{socket.getfqdn()}:{PORT}"
-        if binding := self.model.get_binding("juju-info"):
-            unit_ip = str(binding.network.bind_address)
-            external_url = f"http://{unit_ip}:{PORT}"
-        if self.ingress.url:
-            external_url = self.ingress.url
-        return external_url
 
     def update_secrets(self):
         """Update secrets."""
