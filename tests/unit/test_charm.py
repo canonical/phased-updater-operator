@@ -250,10 +250,7 @@ def test_ingress_ready(caplog):
         remote_app_data={"ingress": f'{{"url": "{ingress_url}"}}'},
     )
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
-    state_in = testing.State(
-        unit_status=testing.ActiveStatus(),
-        relations=[ingress_relation],
-    )
+    state_in = testing.State(relations=[ingress_relation])
     with caplog.at_level(logging.INFO, logger="charm"):
         ctx.run(ctx.on.relation_changed(relation=ingress_relation), state_in)
     assert any(
@@ -261,19 +258,19 @@ def test_ingress_ready(caplog):
     )
 
 
-def test_ingress_not_yet_ready():
-    """Test relation_changed without a URL from the provider yet."""
+def test_ingress_not_yet_ready(caplog):
+    """Test that the charm does not log a ready message when the provider hasn't published a URL yet."""
     ingress_relation = testing.Relation(
         endpoint="ingress",
         remote_app_data={},
     )
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
-    state_in = testing.State(
-        unit_status=testing.ActiveStatus(),
-        relations=[ingress_relation],
+    state_in = testing.State(relations=[ingress_relation])
+    with caplog.at_level(logging.INFO, logger="charm"):
+        ctx.run(ctx.on.relation_changed(relation=ingress_relation), state_in)
+    assert not any(
+        record.message.startswith("This app's ingress URL:") for record in caplog.records
     )
-    state_out = ctx.run(ctx.on.relation_changed(relation=ingress_relation), state_in)
-    assert state_out.unit_status == testing.ActiveStatus()
 
 
 def test_ingress_revoked(caplog):
@@ -283,10 +280,7 @@ def test_ingress_revoked(caplog):
         remote_app_data={"ingress": '{"url": "http://traefik.example.com/mymodel-myapp"}'},
     )
     ctx = testing.Context(PhasedUpdaterOperatorCharm)
-    state_in = testing.State(
-        unit_status=testing.ActiveStatus(),
-        relations=[ingress_relation],
-    )
+    state_in = testing.State(relations=[ingress_relation])
     with caplog.at_level(logging.INFO, logger="charm"):
         ctx.run(ctx.on.relation_broken(relation=ingress_relation), state_in)
     assert any(record.message == "This app no longer has ingress" for record in caplog.records)
