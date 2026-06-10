@@ -7,11 +7,17 @@
 import logging
 
 import ops
+from charms.traefik_k8s.v2.ingress import (
+    IngressPerAppReadyEvent,
+    IngressPerAppRequirer,
+    IngressPerAppRevokedEvent,
+)
 
 import phased_updater
 
 logger = logging.getLogger(__name__)
 
+PORT = 80  # must match the nginx config (TODO)
 CONFIG_FILE = phased_updater.APP_DIR / "config"
 CONFIG_TEMPLATE = """\
 # Configuration file for run-phased-updater
@@ -29,15 +35,31 @@ DRY_RUN={dry_run}
 IGNORE_RELEASES={ignore_releases}
 """
 
+
 class PhasedUpdaterOperatorCharm(ops.CharmBase):
     """Charm the application."""
 
     def __init__(self, framework: ops.Framework):
         super().__init__(framework)
+
+        self.ingress = IngressPerAppRequirer(
+            self, port=PORT, strip_prefix=True, relation_name="ingress"
+        )
+
         framework.observe(self.on.install, self._on_install)
         framework.observe(self.on.start, self._on_start)
         framework.observe(self.on.config_changed, self._on_config_changed)
         framework.observe(self.on.secret_changed, self._on_secret_changed)
+
+        # there isn't really anything to configure here for ingress
+        framework.observe(self.ingress.on.ready, self._on_ingress_ready)
+        framework.observe(self.ingress.on.revoked, self._on_ingress_revoked)
+
+    def _on_ingress_ready(self, event: IngressPerAppReadyEvent):
+        logger.info("This app's ingress URL: %s", event.url)
+
+    def _on_ingress_revoked(self, event: IngressPerAppRevokedEvent):
+        logger.info("This app no longer has ingress")
 
     def _on_install(self, event: ops.InstallEvent):
         """Install the workload on the machine."""
@@ -86,7 +108,6 @@ class PhasedUpdaterOperatorCharm(ops.CharmBase):
                     ignore_releases=ignore_releases,
                 )
             )
-
 
     def update_secrets(self):
         """Update secrets."""

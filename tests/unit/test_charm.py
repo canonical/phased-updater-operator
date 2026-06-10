@@ -3,6 +3,7 @@
 #
 # To learn more about testing, see https://documentation.ubuntu.com/ops/latest/explanation/testing/
 
+import logging
 from pathlib import Path as RealPath
 
 import pytest
@@ -236,3 +237,50 @@ def test_crontab_no_proxies(monkeypatch, crontab_path):
     content = crontab_path.read_text()
     assert phased_updater.NO_HTTP_PROXY in content
     assert phased_updater.NO_HTTPS_PROXY in content
+
+
+# Ingress relation tests
+
+
+def test_ingress_ready(caplog):
+    """Test that the charm logs the ingress URL when ingress becomes ready."""
+    ingress_url = "http://traefik.example.com/mymodel-myapp"
+    ingress_relation = testing.Relation(
+        endpoint="ingress",
+        remote_app_data={"ingress": f'{{"url": "{ingress_url}"}}'},
+    )
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    state_in = testing.State(relations=[ingress_relation])
+    with caplog.at_level(logging.INFO, logger="charm"):
+        ctx.run(ctx.on.relation_changed(relation=ingress_relation), state_in)
+    assert any(
+        record.message == f"This app's ingress URL: {ingress_url}" for record in caplog.records
+    )
+
+
+def test_ingress_not_yet_ready(caplog):
+    """Test that the charm does not log a ready message when the provider hasn't sent a URL."""
+    ingress_relation = testing.Relation(
+        endpoint="ingress",
+        remote_app_data={},
+    )
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    state_in = testing.State(relations=[ingress_relation])
+    with caplog.at_level(logging.INFO, logger="charm"):
+        ctx.run(ctx.on.relation_changed(relation=ingress_relation), state_in)
+    assert not any(
+        record.message.startswith("This app's ingress URL:") for record in caplog.records
+    )
+
+
+def test_ingress_revoked(caplog):
+    """Test that the charm logs a message when ingress is revoked."""
+    ingress_relation = testing.Relation(
+        endpoint="ingress",
+        remote_app_data={"ingress": '{"url": "http://traefik.example.com/mymodel-myapp"}'},
+    )
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    state_in = testing.State(relations=[ingress_relation])
+    with caplog.at_level(logging.INFO, logger="charm"):
+        ctx.run(ctx.on.relation_broken(relation=ingress_relation), state_in)
+    assert any(record.message == "This app no longer has ingress" for record in caplog.records)

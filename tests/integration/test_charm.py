@@ -38,7 +38,7 @@ def test_nginx_is_up(juju: jubilant.Juju):
     ip_address = unit.public_address
 
     # Make an HTTP request to the nginx server
-    url = f"http://{ip_address}:8080"
+    url = f"http://{ip_address}:80"
     count = 0
     status_code = None
     while count < 10:
