@@ -4,6 +4,7 @@
 # To learn more about testing, see https://documentation.ubuntu.com/ops/latest/explanation/testing/
 
 import logging
+import unittest.mock
 from pathlib import Path as RealPath
 
 import pytest
@@ -67,6 +68,16 @@ def test_install(monkeypatch: pytest.MonkeyPatch):
     assert state_out.unit_status == testing.ActiveStatus()
     assert phasedupdater.is_installed()
 
+def test_upgrade_charm(monkeypatch: pytest.MonkeyPatch):
+    on_install = unittest.mock.MagicMock()
+
+    def _on_install(self, event):
+        on_install(event)
+
+    monkeypatch.setattr(PhasedUpdaterOperatorCharm, "_on_install", _on_install)
+    ctx = testing.Context(PhasedUpdaterOperatorCharm)
+    ctx.run(ctx.on.upgrade_charm(), testing.State())
+    on_install.assert_called_once()
 
 @pytest.fixture
 def phasedupdater_installed(monkeypatch: pytest.MonkeyPatch, tmp_path):
