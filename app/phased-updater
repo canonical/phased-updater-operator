@@ -434,20 +434,23 @@ def new_buckets(archive, release, src_pkg, version):
         (quote(src_pkg), quote(previous_version), quote(new_version))
     try:
         new_buckets_file = urlopen(new_buckets_url)
-    except IOError:
+    except IOError as e:
+        logging.error('Error getting new buckets at %s: %s' % (new_buckets_url, e))
         return 'error'
     # If we don't receive an OK response from the Error Tracker we should not
     # increment the phased-update-percentage.
-    if new_buckets_file.getcode() != 200:
-        logging.error('HTTP error retrieving %s' % new_buckets_url)
+    http_code = new_buckets_file.getcode()
+    if http_code != 200:
+        logging.error('HTTP error %d retrieving %s' % (http_code, new_buckets_url))
         return 'error'
     try:
         new_buckets_data = json.load(new_buckets_file)
-    except json.decoder.JSONDecodeError:
-        logging.error('Error getting new buckets at %s' % new_buckets_url)
+    except json.decoder.JSONDecodeError as e:
+        logging.error('Error getting new buckets at %s: %s' % (new_buckets_url, e))
         return 'error'
     if 'error_message' in list(new_buckets_data.keys()):
-        logging.error('Error getting new buckets at %s' % new_buckets_url)
+        logging.error('Error getting new buckets at %s: %s' %
+                      (new_buckets_url, new_buckets_data['error_message']))
         return 'error'
     if len(new_buckets_data['objects']) == 0:
         return False
@@ -473,16 +476,16 @@ def new_buckets(archive, release, src_pkg, version):
             ((BASE_ERRORS_URL) , quote(bucket['function'].encode('utf-8')))
         try:
             versions_data_file = urlopen(versions_url)
-        except IOError:
-            logging.error('Error getting release versions at %s' % versions_url)
+        except IOError as e:
+            logging.error('Error getting release versions at %s: %s' % (versions_url, e))
             # don't return an error because its better to have a false positive
             # in this case
             buckets.append(bucket['web_link'])
             continue
         try:
             versions_data = json.load(versions_data_file)
-        except json.decoder.JSONDecodeError:
-            logging.error('Error getting release versions at %s' % versions_url)
+        except json.decoder.JSONDecodeError as e:
+            logging.error('Error getting release versions at %s: %s' % (versions_url, e))
             # don't return an error because its better to have a false positive
             # in this case
             buckets.append(bucket['web_link'])
@@ -545,20 +548,23 @@ def crash_rate_increase(release, src_pkg, version, last_pup):
          last_pup, date)
     try:
         rate_file = urlopen(rate_url)
-    except IOError:
+    except IOError as e:
+        logging.error('Error getting rate at %s: %s' % (rate_url, e))
         return 'error'
     # If we don't receive an OK response from the Error Tracker we should not
     # increment the phased-update-percentage.
-    if rate_file.getcode() != 200:
-        logging.error('HTTP error retrieving %s' % rate_url)
+    http_code = rate_file.getcode()
+    if http_code != 200:
+        logging.error('HTTP error %d retrieving %s' % (http_code, rate_url))
         return 'error'
     try:
         rate_data = json.load(rate_file)
-    except json.decoder.JSONDecodeError:
-        logging.error('Error getting rate at %s' % rate_url)
+    except json.decoder.JSONDecodeError as e:
+        logging.error('Error getting rate at %s: %s' % (rate_url, e))
         return 'error'
     if 'error_message' in list(rate_data.keys()):
-        logging.error('Error getting rate at %s' % rate_url)
+        logging.error('Error getting rate at %s: %s' %
+                      (rate_url, rate_data['error_message']))
         return 'error'
     logging.info('Details (rate increase): %s' % rate_url)
     # this may not be useful if the buckets creating the increase have
