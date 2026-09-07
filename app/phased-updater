@@ -790,6 +790,7 @@ if __name__ == '__main__':
     MEDIUM_PACKAGES = {
         'openssl',
         'openssh',
+        'rust-coreutils',
     }
     PUP_SLOW_INCREMENT = 1
     PUP_MEDIUM_INCREMENT = 5
