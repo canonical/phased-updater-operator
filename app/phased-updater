@@ -118,13 +118,14 @@ def generate_html_report(releases, buckets):
             'phased-updater</a></p>' %
             time.strftime('%F %T UTC', time.gmtime()))
         report.write('''<p>A <a
-href="https://wiki.ubuntu.com/StableReleaseUpdates">stable release
-update</a> is either being phased (update percentage is not 0%) or phasing has
-been stopped (update percentage is 0%) for the following packages and releases.
+href="https://ubuntu.com/project/docs/SRU/stable-release-updates/">stable
+release update</a> is either being phased (update percentage is not 0%) or
+phasing has been stopped (update percentage is 0%) for the following packages
+and releases.
 <p>The phasing stops if there is either an increased rate of crashes or an
 error has been found that has only been seen with the SRU'ed version of the
 package.<p>
-<a href="https://wiki.ubuntu.com/StableReleaseUpdates#Phasing">Learn more</a>
+<a href="https://ubuntu.com/project/docs/SRU/howto/phasing/">Learn more</a>
 about investigating halted phased updates.''')
         for release in releases:
             rname = release.name
@@ -267,7 +268,7 @@ def create_email_notifications(releases, spph_buckets):
               '[1] Request access to the Ubuntu Error Tracker at '
               'https://forms.canonical.com/reports/.\n'
               '[2] Learn more about investigating at '
-              'https://wiki.ubuntu.com/StableReleaseUpdates#Phasing\n' 
+              'https://ubuntu.com/project/docs/SRU/howto/phasing/\n'
               '[3] https://launchpad.net/~ubuntu-sru' %
               (REPORT_FILE))
     for release in releases:
