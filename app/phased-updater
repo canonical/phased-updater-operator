@@ -39,12 +39,37 @@ from collections import defaultdict, OrderedDict
 from email import utils
 from functools import cmp_to_key
 from optparse import OptionParser
+from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import urlopen
 
 import lputils
 
 from launchpadlib.launchpad import Launchpad
+
+
+RETRY_DELAYS = (3, 4, 5)
+
+
+def urlopen_retry(url):
+    """urlopen() that retries on 5xx responses and refused connections.
+
+    We also retry on refused connection errors because sometimes some of
+    the proxies are down, but not all of them.
+    """
+    for delay in RETRY_DELAYS + (None,):
+        try:
+            return urlopen(url)
+        except (HTTPError, URLError) as e:
+            if isinstance(e, HTTPError):
+                retryable = e.code >= 500
+            else:
+                retryable = isinstance(e.reason, ConnectionRefusedError)
+            if delay is None or not retryable:
+                raise
+            logging.warning('Error getting %s: %s; retrying in %ds' %
+                            (url, e, delay))
+            time.sleep(delay)
 
 
 def get_primary_email(lp_user):
@@ -299,7 +324,7 @@ def create_email_notifications(releases, spph_buckets):
             changer_name = ''
             changer_email = ''
             try:
-                changes_file = urlopen(changes_file_url)
+                changes_file = urlopen_retry(changes_file_url)
                 for line in changes_file.readlines():
                     line = line.decode('utf-8').strip()
                     if line.startswith('Changed-By:'):
@@ -434,7 +459,7 @@ def new_buckets(archive, release, src_pkg, version):
         'package=%s&previous_version=%s&new_version=%s' % \
         (quote(src_pkg), quote(previous_version), quote(new_version))
     try:
-        new_buckets_file = urlopen(new_buckets_url)
+        new_buckets_file = urlopen_retry(new_buckets_url)
     except IOError as e:
         logging.error('Error getting new buckets at %s: %s' % (new_buckets_url, e))
         return 'error'
@@ -476,7 +501,7 @@ def new_buckets(archive, release, src_pkg, version):
         versions_url = '%sversions/?format=json&id=%s' % \
             ((BASE_ERRORS_URL) , quote(bucket['function'].encode('utf-8')))
         try:
-            versions_data_file = urlopen(versions_url)
+            versions_data_file = urlopen_retry(versions_url)
         except IOError as e:
             logging.error('Error getting release versions at %s: %s' % (versions_url, e))
             # don't return an error because its better to have a false positive
@@ -548,7 +573,7 @@ def crash_rate_increase(release, src_pkg, version, last_pup):
         (quote(release_name), quote(src_pkg), quote(pvers), quote(version),
          last_pup, date)
     try:
-        rate_file = urlopen(rate_url)
+        rate_file = urlopen_retry(rate_url)
     except IOError as e:
         logging.error('Error getting rate at %s: %s' % (rate_url, e))
         return 'error'
