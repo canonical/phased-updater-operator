@@ -156,6 +156,14 @@ def get_primary_email(lp_user):
     return lp_user_email
 
 
+class PhasingUpdateError(Exception):
+    """Changing the phased update percentage of a binary failed.
+
+    Binaries handled before the failing one may already have been changed,
+    so the package's binaries can be left with different percentages.
+    """
+
+
 def set_pup(current_pup, new_pup, release, suite, src_pkg):
     options.series = release
     options.suite = suite
@@ -166,10 +174,18 @@ def set_pup(current_pup, new_pup, release, suite, src_pkg):
         binary for binary in source.getPublishedBinaries()
         if not binary.is_debug]
 
+    changed = []
     for pub in publications:
         if pub.status != 'Published':
             continue
-        pub.changeOverride(new_phased_update_percentage=new_pup)
+        try:
+            pub.changeOverride(new_phased_update_percentage=new_pup)
+        except Exception as e:
+            raise PhasingUpdateError(
+                'Failed to set p-u-p to %s%% for %s %s (already changed: '
+                '%s): %s' % (new_pup, suite, pub.binary_package_name,
+                             ', '.join(changed) or 'none', e)) from e
+        changed.append(pub.binary_package_name)
         if new_pup != 0:
             logging.info('Incremented p-u-p for %s %s from %s%% to %s%%' %
                          (suite, pub.binary_package_name,
@@ -867,16 +883,18 @@ def main():
                         set_pup(current_pup, new_pup, release, suite, src_pkg)
                     issues[rname][spph_link]['pup'] = new_pup
             except Exception as e:
-                if not (is_retryable_error(e) or
+                if not (isinstance(e, PhasingUpdateError) or
+                        is_retryable_error(e) or
                         isinstance(e, lazr.restfulclient.errors.ServerError)):
                     raise
-                # By this point, Launchpad GETs have already been retried on
-                # network errors and 500/504 responses (see
-                # add_request_retries()), and launchpadlib has retried 502/503
-                # responses, so rather than aborting the whole run, give up on
-                # this package and carry on with the next. Drop whatever was
-                # recorded for it so far, so the report and emails don't use
-                # half-evaluated data.
+                # Rather than aborting the whole run, give up on this package
+                # and carry on with the next. Errors from Launchpad GETs get
+                # here after their retries: network errors and 500/504
+                # responses are retried by add_request_retries(), and 502/503
+                # by launchpadlib. Writes (changeOverride) are not retried, and
+                # their failures are raised as PhasingUpdateError by set_pup().
+                # Drop whatever was recorded for the package so far, so the
+                # report and emails don't use half-evaluated data.
                 logging.error('Skipping %s/%s due to error: %s' %
                               (rname, pub_source.source_package_name, e))
                 issues[rname].pop(pub_source.self_link, None)
