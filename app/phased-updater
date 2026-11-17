@@ -29,6 +29,7 @@ import apt
 import codecs
 import csv
 import datetime
+import http.client
 import lazr
 import logging
 import os
@@ -70,6 +71,49 @@ def urlopen_retry(url):
             logging.warning('Error getting %s: %s; retrying in %ds' %
                             (url, e, delay))
             time.sleep(delay)
+
+
+LP_RETRY_ERRORS = (ConnectionError, TimeoutError, http.client.IncompleteRead,
+                   http.client.BadStatusLine)
+
+
+def add_request_retries(http):
+    """Make http.request() retry GET requests interrupted by network errors.
+
+    launchpadlib itself only retries 502/503 responses; exceptions such as
+    a reset connection or a truncated response are raised straight to us.
+    Only GET requests are retried, as repeating a write whose response was
+    lost could apply it twice.
+    """
+    request = http.request
+
+    def request_retry(uri, method='GET', *args, **kwargs):
+        if method != 'GET':
+            return request(uri, method, *args, **kwargs)
+        for delay in RETRY_DELAYS + (None,):
+            try:
+                return request(uri, method, *args, **kwargs)
+            except LP_RETRY_ERRORS as e:
+                if delay is None:
+                    raise
+                logging.warning('Error getting %s: %s; retrying in %ds' %
+                                (uri, e, delay))
+                time.sleep(delay)
+
+    http.request = request_retry
+    return http
+
+
+class RetryingLaunchpad(Launchpad):
+    """Launchpad whose HTTP GET requests are retried on network errors.
+
+    Every request launchpadlib makes (named operations, collection pages
+    fetched while iterating, link traversal, load()) goes through the
+    object returned by httpFactory(), so wrapping it covers them all.
+    """
+
+    def httpFactory(self, *args, **kwargs):
+        return add_request_retries(super().httpFactory(*args, **kwargs))
 
 
 def get_primary_email(lp_user):
@@ -848,7 +892,7 @@ exclusive.")
         options.ignore_releases = options.ignore_releases.split(",")
     else:
         options.ignore_releases = []
-    launchpad = Launchpad.login_with(
+    launchpad = RetryingLaunchpad.login_with(
         'phased-updater', options.launchpad_instance, version='devel')
     logging.basicConfig(filename='phased-updates.log',
                         format='%(asctime)s - %(levelname)s - %(message)s',
