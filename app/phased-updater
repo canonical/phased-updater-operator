@@ -892,8 +892,6 @@ exclusive.")
         options.ignore_releases = options.ignore_releases.split(",")
     else:
         options.ignore_releases = []
-    launchpad = RetryingLaunchpad.login_with(
-        'phased-updater', options.launchpad_instance, version='devel')
     logging.basicConfig(filename='phased-updates.log',
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         level=logging.INFO)
@@ -901,6 +899,8 @@ exclusive.")
     if options.no_act:
         startup_msg += " in no-act mode"
     logging.info(startup_msg)
+    launchpad = RetryingLaunchpad.login_with(
+        'phased-updater', options.launchpad_instance, version='devel')
     ubuntu = launchpad.distributions['ubuntu']
     archive = ubuntu.getArchive(name='primary')
     main()
