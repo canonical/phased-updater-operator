@@ -34,6 +34,7 @@ import lazr
 import logging
 import os
 import simplejson as json
+import ssl
 import time
 
 from collections import defaultdict, OrderedDict
@@ -74,7 +75,19 @@ def urlopen_retry(url):
 
 
 LP_RETRY_ERRORS = (ConnectionError, TimeoutError, http.client.IncompleteRead,
-                   http.client.BadStatusLine)
+                   http.client.BadStatusLine, ssl.SSLError)
+
+
+def is_retryable_error(e):
+    """Whether e is a transient network error worth retrying.
+
+    ssl.SSLError is included because a TLS connection dropped mid-read (by
+    a proxy going away, for example) is not always raised as the more
+    specific ssl.SSLEOFError. Certificate verification failures will not
+    go away by retrying, so they are excluded.
+    """
+    return (isinstance(e, LP_RETRY_ERRORS) and
+            not isinstance(e, ssl.SSLCertVerificationError))
 
 
 def add_request_retries(http):
@@ -94,7 +107,7 @@ def add_request_retries(http):
             try:
                 return request(uri, method, *args, **kwargs)
             except LP_RETRY_ERRORS as e:
-                if delay is None:
+                if delay is None or not is_retryable_error(e):
                     raise
                 logging.warning('Error getting %s: %s; retrying in %ds' %
                                 (uri, e, delay))
