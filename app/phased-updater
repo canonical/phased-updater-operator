@@ -195,7 +195,7 @@ def set_pup(current_pup, new_pup, release, suite, src_pkg):
                          (current_pup, suite, pub.binary_package_name))
 
 
-def generate_html_report(releases, buckets):
+def generate_html_report(releases, buckets, failures):
     import tempfile
     import shutil
     with tempfile.NamedTemporaryFile(mode='w') as report:
@@ -215,6 +215,7 @@ def generate_html_report(releases, buckets):
     table td { text-align: left; border-style: none none dotted none;
                border-width: 1px; padding-right: 10px; }
     .noborder { border-style: none; }
+    .warning { color: #a00000; }
     a { color: blue; }
     a:visited { color: black; }
   </style>
@@ -228,6 +229,19 @@ def generate_html_report(releases, buckets):
             'ubuntu-archive-tools/tree/phased-updater">'
             'phased-updater</a></p>' %
             time.strftime('%F %T UTC', time.gmtime()))
+        if failures:
+            report.write('<p class="warning"><strong>Warning: this report is '
+                         'incomplete.</strong> The following packages could '
+                         'not be processed because of errors, so they are '
+                         'missing from it. See the phased-updater log for '
+                         'details.</p>\n<ul class="warning">\n')
+            for rname, src_pkg, phasing_changed in failures:
+                note = ''
+                if phasing_changed:
+                    note = (' (its phased update percentage may have been '
+                            'changed for only some of its binaries)')
+                report.write('  <li>%s/%s%s</li>\n' % (rname, src_pkg, note))
+            report.write('</ul>\n')
         report.write('''<p>A <a
 href="https://ubuntu.com/project/docs/SRU/stable-release-updates/">stable
 release update</a> is either being phased (update percentage is not 0%) or
@@ -745,6 +759,9 @@ def main():
         releases.append(series)
     releases.reverse()
     issues = {}
+    # (release name, source package, whether its phasing may have been
+    # partly changed) for each package skipped because of an error.
+    failures = []
     for release in releases:
         logging.info(f"Processing release {release.name}")
         # We can't use release.datereleased because some SRUs are 0 day
@@ -898,7 +915,9 @@ def main():
                 logging.error('Skipping %s/%s due to error: %s' %
                               (rname, pub_source.source_package_name, e))
                 issues[rname].pop(pub_source.self_link, None)
-    generate_html_report(releases, issues)
+                failures.append((rname, pub_source.source_package_name,
+                                 isinstance(e, PhasingUpdateError)))
+    generate_html_report(releases, issues, failures)
     if options.email:
         create_email_notifications(releases, issues)
 
